@@ -12,7 +12,7 @@ import {
 
 export function ModeToggle() {
   const { setTheme } = useTheme();
-  const [currentTheme, setCurrentTheme] = useState<string>("dark");
+  const [currentTheme, setCurrentTheme] = useState<string>("light");
 
   return (
     <DropdownMenu>
