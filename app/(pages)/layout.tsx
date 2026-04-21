@@ -1,9 +1,11 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 
 import BottomNav from "./bottom-nav";
 import { ModeToggle } from "@/components/mode-toggle";
 import Image from "next/image";
+import { redirect } from "next/navigation";
 
 const PageLayout = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -12,11 +14,12 @@ const PageLayout = ({ children }: { children: React.ReactNode }) => {
         <div className="w-screen flex justify-center">
           <div className="fixed max-w-6xl w-full p-4 flex justify-between items-center bg-white dark:bg-gray-900 border-b shadow-[0_0px_6px_-1px_rgba(0,0,0,0.1)] z-10 top-0">
             <Image
-              src="/nav-logo-2.png"
+              src="/logo.png"
               alt="Logo"
               width={32}
               height={32}
               className="mr-2"
+              onClick={() => redirect("/home")}
             />
             <div className="flex items-center space-x-4">
               <ModeToggle />
@@ -35,7 +38,7 @@ const PageLayout = ({ children }: { children: React.ReactNode }) => {
         </div>
       </header>
 
-      <main className="flex-grow overflow-y-auto scrollbar-hide">
+      <main className="flex-grow overflow-y-auto scrollbar-hide py-22">
         <div className="container mx-auto scrollbar-hide">{children}</div>
       </main>
 

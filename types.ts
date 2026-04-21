@@ -277,3 +277,59 @@ export enum BlogCategory {
   TRAVEL_STORIES = "TRAVEL STORIES & EXPERIENCES",
   NEWS_AND_UPDATES = "NEWS AND UPDATES",
 }
+
+// export type TaskStatus =
+//   | "TODO"
+//   | "IN_PROGRESS"
+//   | "REVIEW"
+//   | "COMPLETED"
+//   | "CANCELLED";
+
+export enum TaskStatus {
+  TODO = "TODO",
+  IN_PROGRESS = "IN_PROGRESS",
+  REVIEW = "REVIEW",
+  COMPLETED = "COMPLETED",
+  CANCELLED = "CANCELLED",
+}
+
+export enum TaskPriority {
+  LOW = "LOW",
+  MEDIUM = "MEDIUM",
+  HIGH = "HIGH",
+  URGENT = "URGENT",
+}
+
+export interface TaskAttachment {
+  url: string;
+  type: "IMAGE" | "PDF" | "DOC" | "EXCEL" | "OTHER";
+  name?: string;
+}
+
+export interface Task {
+  id: string;
+
+  created_by: string;
+  assigned_to?: string;
+  parent_id?: string;
+
+  title: string;
+  description?: string;
+
+  status: TaskStatus;
+  priority: TaskPriority;
+
+  category?: string;
+  tags: string[];
+  sort_order: number;
+
+  attachments: TaskAttachment[];
+  is_archived: boolean;
+
+  start_date?: string;
+  due_date?: string;
+  completed_at?: string;
+
+  created_at: string;
+  updated_at: string;
+}
