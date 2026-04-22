@@ -22,10 +22,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useEffect, useState } from "react";
+import { SingleDatePicker } from "@/components/single-date-picker";
+import { ArrowLeft } from "lucide-react";
 
 export default function CreateTaskPage() {
   const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
+
+  console.log("Users:", users);
 
   const fetchUsers = async () => {
     const { data, error } = await supabase
@@ -48,6 +52,8 @@ export default function CreateTaskPage() {
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
     reset,
   } = useForm<TaskFormData>({
@@ -55,15 +61,18 @@ export default function CreateTaskPage() {
     defaultValues: {
       status: TaskStatus.TODO,
       priority: TaskPriority.MEDIUM,
+      assigned_to: "",
       tags: [],
       attachments: [],
     },
   });
 
   const onSubmit = async (data: TaskFormData) => {
+    console.log("Form data:", data);
     const {
       data: { user },
     } = await supabase.auth.getUser();
+    // return;
 
     if (!user?.id) {
       toast.error("You must be logged in to create a task.");
@@ -96,15 +105,15 @@ export default function CreateTaskPage() {
   };
 
   return (
-    <div className="container mx-auto p-4 max-w-2xl">
+    <div className="container max-w-2xl">
       <div className="mb-6">
         <Button
           type="button"
-          variant="outline"
+          variant="link"
           onClick={() => router.push("/task")}
-          className="mb-4"
+          className="mb-4 px-0"
         >
-          ← Back to Tasks
+          <ArrowLeft /> Back
         </Button>
         <h1 className="text-3xl font-bold">Create New Task</h1>
         <p className="text-muted-foreground mt-2">
@@ -147,56 +156,141 @@ export default function CreateTaskPage() {
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="priority">Priority</Label>
-            <Select key="priority" {...register("priority")}>
-              <SelectTrigger>
-                <SelectValue
-                  defaultValue={TaskPriority.MEDIUM}
-                  placeholder="Select priority"
-                />
-              </SelectTrigger>
-              <SelectContent defaultValue={TaskPriority.MEDIUM}>
-                <SelectGroup>
-                  <SelectLabel>Priority Levels</SelectLabel>
-                  <SelectItem value={TaskPriority.LOW}>Low</SelectItem>
-                  <SelectItem value={TaskPriority.MEDIUM}>Medium</SelectItem>
-                  <SelectItem value={TaskPriority.HIGH}>High</SelectItem>
-                  <SelectItem value={TaskPriority.URGENT}>Urgent</SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-            {errors.priority && (
-              <p className="text-sm text-red-500">{errors.priority.message}</p>
-            )}
+          <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="start_date">Start Date</Label>
+              <SingleDatePicker
+                value={
+                  watch("start_date")
+                    ? new Date(watch("start_date"))
+                    : undefined
+                }
+                onChange={(date) => {
+                  setValue("start_date", date?.toISOString() ?? "");
+                }}
+              />
+              {errors.start_date && (
+                <p className="text-sm text-red-500">
+                  {errors.start_date.message}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="due_date">Due Date</Label>
+              {/* <Input id="due_date" type="date" {...register("due_date")} /> */}
+              <SingleDatePicker
+                value={
+                  watch("due_date") ? new Date(watch("due_date")) : undefined
+                }
+                onChange={(date) => {
+                  setValue("due_date", date?.toISOString() ?? "");
+                }}
+              />
+              {errors.due_date && (
+                <p className="text-sm text-red-500">
+                  {errors.due_date.message}
+                </p>
+              )}
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="status">Status</Label>
-            <Select key="status" {...register("status")}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectLabel>Status Levels</SelectLabel>
-                  <SelectItem value={TaskStatus.TODO}>To Do</SelectItem>
-                  <SelectItem value={TaskStatus.IN_PROGRESS}>
-                    In Progress
-                  </SelectItem>
-                  <SelectItem value={TaskStatus.REVIEW}>Review</SelectItem>
-                  <SelectItem value={TaskStatus.COMPLETED}>
-                    Completed
-                  </SelectItem>
-                  <SelectItem value={TaskStatus.CANCELLED}>
-                    Cancelled
-                  </SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-            {errors.status && (
-              <p className="text-sm text-red-500">{errors.status.message}</p>
-            )}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="priority">Priority</Label>
+              <Select
+                key="priority"
+                value={watch("priority")}
+                onValueChange={(value) =>
+                  setValue("priority", value as TaskPriority)
+                }
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue
+                    defaultValue={TaskPriority.MEDIUM}
+                    placeholder="Select priority"
+                  />
+                </SelectTrigger>
+                <SelectContent defaultValue={TaskPriority.MEDIUM}>
+                  <SelectGroup>
+                    <SelectLabel>Priority Levels</SelectLabel>
+                    <SelectItem value={TaskPriority.LOW}>Low</SelectItem>
+                    <SelectItem value={TaskPriority.MEDIUM}>Medium</SelectItem>
+                    <SelectItem value={TaskPriority.HIGH}>High</SelectItem>
+                    <SelectItem value={TaskPriority.URGENT}>Urgent</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+              {errors.priority && (
+                <p className="text-sm text-red-500">
+                  {errors.priority.message}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="status">Status</Label>
+              <Select
+                key="status"
+                value={watch("status")}
+                onValueChange={(value) =>
+                  setValue("status", value as TaskStatus)
+                }
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Status Levels</SelectLabel>
+                    <SelectItem value={TaskStatus.TODO}>To Do</SelectItem>
+                    <SelectItem value={TaskStatus.IN_PROGRESS}>
+                      In Progress
+                    </SelectItem>
+                    <SelectItem value={TaskStatus.REVIEW}>Review</SelectItem>
+                    <SelectItem value={TaskStatus.COMPLETED}>
+                      Completed
+                    </SelectItem>
+                    <SelectItem value={TaskStatus.CANCELLED}>
+                      Cancelled
+                    </SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+              {errors.status && (
+                <p className="text-sm text-red-500">{errors.status.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="assigned_to">Assigned To</Label>
+              <Select
+                value={watch("assigned_to")}
+                onValueChange={(value) => {
+                  setValue("assigned_to", value);
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select user" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Users</SelectLabel>
+
+                    {users.map((user) => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {user.full_name}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+              {errors.assigned_to && (
+                <p className="text-sm text-red-500">
+                  {errors.assigned_to.message}
+                </p>
+              )}
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -209,52 +303,6 @@ export default function CreateTaskPage() {
             {errors.category && (
               <p className="text-sm text-red-500">{errors.category.message}</p>
             )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="assigned_to">Assigned To</Label>
-            <Select key="assigned_to" {...register("assigned_to")}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select user" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectLabel>Users</SelectLabel>
-                  {users.map((user) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.full_name}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-            {errors.assigned_to && (
-              <p className="text-sm text-red-500">
-                {errors.assigned_to.message}
-              </p>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="start_date">Start Date</Label>
-              <Input id="start_date" type="date" {...register("start_date")} />
-              {errors.start_date && (
-                <p className="text-sm text-red-500">
-                  {errors.start_date.message}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="due_date">Due Date</Label>
-              <Input id="due_date" type="date" {...register("due_date")} />
-              {errors.due_date && (
-                <p className="text-sm text-red-500">
-                  {errors.due_date.message}
-                </p>
-              )}
-            </div>
           </div>
 
           <div className="flex gap-4 pt-4">

@@ -108,7 +108,7 @@ const ProfilePage = async () => {
   const isActive = data.status?.toUpperCase() === "ACTIVE";
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 pt-24 pb-28">
+    <div className="mx-auto w-full max-w-3xl px-4">
       <div className="relative overflow-hidden rounded-2xl ring-1 ring-foreground/10">
         <div className="h-32 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 sm:h-40" />
 
