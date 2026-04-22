@@ -125,6 +125,8 @@ export function TaskForm({ task }: TaskFormProps) {
       data: { user },
     } = await supabase.auth.getUser();
 
+    console.log("Submitting task with data:", data); // Debug log
+
     if (!user?.id) {
       toast.error("You must be logged in.");
       router.push("/login");
@@ -135,7 +137,11 @@ export function TaskForm({ task }: TaskFormProps) {
       if (isEdit) {
         const { error } = await supabase
           .from("tasks")
-          .update({ ...data, updated_at: new Date().toISOString() })
+          .update({
+            ...data,
+            updated_at: new Date().toISOString(),
+            parent_id: data.parent_id || null,
+          })
           .eq("id", task!.id);
         if (error) throw error;
         toast.success("Task updated!");
@@ -163,13 +169,13 @@ export function TaskForm({ task }: TaskFormProps) {
   // ── render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6">
+    <div className="max-w-7xl">
       {/* Header */}
       <div className="mb-6">
         <Button
           type="button"
           variant="link"
-          className="px-0 mb-3"
+          className="mb-3 !px-0 cursor-pointer !no-underline"
           onClick={() =>
             isEdit ? router.push(`/task/${task!.id}`) : router.push("/task")
           }

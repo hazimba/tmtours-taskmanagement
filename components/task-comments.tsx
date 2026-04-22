@@ -136,6 +136,20 @@ export function TaskComments({ taskId, currentUserId }: TaskCommentsProps) {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [comments.length]);
 
+  // ── refetch helper ─────────────────────────────────────────────────────────
+
+  async function refetchComments() {
+    const { data, error } = await supabase
+      .from("task_comments")
+      .select(
+        `id, task_id, user_id, content, created_at, updated_at,
+         user:profiles(id, full_name, avatar_url)`
+      )
+      .eq("task_id", taskId)
+      .order("created_at", { ascending: true });
+    if (!error && data) setComments(data as unknown as TaskComment[]);
+  }
+
   // ── post comment ───────────────────────────────────────────────────────────
 
   const onSubmit = async (data: TaskCommentFormData) => {
@@ -150,6 +164,7 @@ export function TaskComments({ taskId, currentUserId }: TaskCommentsProps) {
       toast.error("Failed to post comment.");
     } else {
       reset();
+      await refetchComments();
     }
   };
 
@@ -162,6 +177,7 @@ export function TaskComments({ taskId, currentUserId }: TaskCommentsProps) {
       .eq("id", id)
       .eq("user_id", currentUserId);
     if (error) toast.error("Failed to delete comment.");
+    else await refetchComments();
   }
 
   // ── render ─────────────────────────────────────────────────────────────────
