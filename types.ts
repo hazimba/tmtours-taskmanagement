@@ -304,6 +304,7 @@ export interface TaskAttachment {
   url: string;
   type: "IMAGE" | "PDF" | "DOC" | "EXCEL" | "OTHER";
   name?: string;
+  uploaded_at?: string; // ISO string — set at upload/link time
 }
 
 export interface Task {

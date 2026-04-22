@@ -62,6 +62,17 @@ function AttachmentIcon({ type }: { type: string }) {
   return <File className="h-4 w-4 text-muted-foreground" />;
 }
 
+function formatUploadedAt(iso?: string) {
+  if (!iso) return null;
+  const d = new Date(iso);
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yyyy = d.getFullYear();
+  const hh = String(d.getHours()).padStart(2, "0");
+  const min = String(d.getMinutes()).padStart(2, "0");
+  return `${dd}-${mm}-${yyyy} ${hh}:${min}`;
+}
+
 // ─── props ────────────────────────────────────────────────────────────────────
 
 interface TaskAttachmentModalProps {
@@ -140,6 +151,7 @@ export function TaskAttachmentModal({
         url: publicUrl,
         type: getAttachmentType(file),
         name: file.name,
+        uploaded_at: new Date().toISOString(),
       });
     }
 
@@ -151,6 +163,7 @@ export function TaskAttachmentModal({
         toast.success(
           `${uploaded.length} file${uploaded.length > 1 ? "s" : ""} uploaded`
         );
+        setOpen(false);
       }
     }
 
@@ -179,6 +192,7 @@ export function TaskAttachmentModal({
       url,
       type: linkType,
       name: linkName.trim() || url,
+      uploaded_at: new Date().toISOString(),
     };
     const updated = [...attachments, newAtt];
     const ok = await saveAttachments(updated);
@@ -188,6 +202,7 @@ export function TaskAttachmentModal({
       setLinkName("");
       setLinkType("OTHER");
       toast.success("Link added.");
+      setOpen(false);
     }
   }
 
@@ -376,35 +391,48 @@ export function TaskAttachmentModal({
         </p>
       ) : (
         <div className="space-y-2">
-          {attachments.map((att, idx) => (
-            <div
-              key={idx}
-              className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted/40 transition-colors group"
-            >
-              <AttachmentIcon type={att.type} />
-              <a
-                href={att.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 min-w-0 flex items-center gap-2"
+          {[...attachments]
+            .sort((a, b) => {
+              const ta = a.uploaded_at ? new Date(a.uploaded_at).getTime() : 0;
+              const tb = b.uploaded_at ? new Date(b.uploaded_at).getTime() : 0;
+              return tb - ta;
+            })
+            .map((att, idx) => (
+              <div
+                key={idx}
+                className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted/40 transition-colors group"
               >
-                <span className="text-sm truncate">{att.name ?? att.url}</span>
-                <ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-              </a>
-              <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded uppercase shrink-0">
-                {att.type}
-              </span>
-              {isAssignee && (
-                <button
-                  type="button"
-                  onClick={() => handleRemove(idx)}
-                  className="shrink-0 text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
+                <AttachmentIcon type={att.type} />
+                <a
+                  href={att.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 min-w-0 flex items-center gap-2"
                 >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              )}
-            </div>
-          ))}
+                  <div className="min-w-0">
+                    <p className="text-sm truncate">{att.name ?? att.url}</p>
+                    {att.uploaded_at && (
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        {formatUploadedAt(att.uploaded_at)}
+                      </p>
+                    )}
+                  </div>
+                  <ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                </a>
+                <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded uppercase shrink-0">
+                  {att.type}
+                </span>
+                {isAssignee && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemove(attachments.indexOf(att))}
+                    className="shrink-0 text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+            ))}
         </div>
       )}
     </div>

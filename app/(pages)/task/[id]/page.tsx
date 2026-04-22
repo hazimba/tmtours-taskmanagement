@@ -201,10 +201,10 @@ export default async function TaskDetailPage({
   const subtasks = (subtasksRes.data ?? []) as Task[];
 
   return (
-    <div className="min-h-screen bg-background border border-border rounded-lg shadow-sm">
+    <div className="max-w-3xl mx-auto">
       {/* Top Bar */}
-      <div className="sticky top-0 z-10 border-border">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+      <div className="sticky top-8 z-10 border-border bg-background border border-border rounded-lg shadow-sm">
+        <div className="max-w-3xl px-4 py-3 flex items-center justify-between gap-4">
           <Link href="/task">
             <Button variant="ghost" size="sm" className="gap-1.5 -ml-2">
               <ArrowLeft className="h-4 w-4" />
@@ -221,7 +221,7 @@ export default async function TaskDetailPage({
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto px-4 py-6 space-y-5">
+      <div className="max-w-3xl px-4 py-6 space-y-5 h-screen overflow-y-auto">
         {/* Parent task breadcrumb */}
         {parentTask && (
           <Link
