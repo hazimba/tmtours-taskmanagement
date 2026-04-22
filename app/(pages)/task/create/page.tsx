@@ -29,8 +29,6 @@ export default function CreateTaskPage() {
   const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
 
-  console.log("Users:", users);
-
   const fetchUsers = async () => {
     const { data, error } = await supabase
       .from("profiles")
@@ -39,7 +37,7 @@ export default function CreateTaskPage() {
       console.error("Error fetching users:", error);
       return;
     }
-    setUsers(data);
+    setUsers(data as User[]);
   };
 
   useEffect(() => {
@@ -161,8 +159,9 @@ export default function CreateTaskPage() {
               <Label htmlFor="start_date">Start Date</Label>
               <SingleDatePicker
                 value={
-                  watch("start_date")
-                    ? new Date(watch("start_date"))
+                  watch("start_date") !== undefined &&
+                  watch("start_date") !== ""
+                    ? new Date(watch("start_date") as string)
                     : undefined
                 }
                 onChange={(date) => {
@@ -181,7 +180,9 @@ export default function CreateTaskPage() {
               {/* <Input id="due_date" type="date" {...register("due_date")} /> */}
               <SingleDatePicker
                 value={
-                  watch("due_date") ? new Date(watch("due_date")) : undefined
+                  watch("due_date") !== undefined && watch("due_date") !== ""
+                    ? new Date(watch("due_date") as string)
+                    : undefined
                 }
                 onChange={(date) => {
                   setValue("due_date", date?.toISOString() ?? "");
