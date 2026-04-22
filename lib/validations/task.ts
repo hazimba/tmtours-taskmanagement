@@ -19,13 +19,12 @@ export const taskSchema = z.object({
   parent_id: z.string().optional().or(z.literal("")),
   start_date: z.string().optional().or(z.literal("")),
   due_date: z.string().optional().or(z.literal("")),
-  attachments: z.array(
-    z.object({
-      url: z.string().url("Invalid URL"),
-      type: z.enum(["IMAGE", "PDF", "DOC", "EXCEL", "OTHER"]),
-      name: z.string().optional(),
-    })
-  ),
 });
 
 export type TaskFormData = z.infer<typeof taskSchema>;
+
+export const taskCommentSchema = z.object({
+  content: z.string().min(1, "Comment cannot be empty").max(2000),
+});
+
+export type TaskCommentFormData = z.infer<typeof taskCommentSchema>;

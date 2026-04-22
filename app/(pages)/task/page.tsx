@@ -64,7 +64,6 @@ const TaskPage = async () => {
   const { data: tasks, error } = await supabase
     .from("tasks")
     .select("*")
-    .eq("assigned_to", user?.id)
     .eq("is_archived", false)
     .order("sort_order", { ascending: true });
 
@@ -94,7 +93,7 @@ const TaskPage = async () => {
   return (
     <div className="">
       <div className="backdrop-blur">
-        <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div>
             <h1 className="text-xl font-bold tracking-tight">My Tasks</h1>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -111,7 +110,7 @@ const TaskPage = async () => {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto py-6 space-y-8">
+      <div className="max-w-7xl mx-auto py-6 space-y-8">
         {(tasks ?? []).length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
             <div className="rounded-full p-5">

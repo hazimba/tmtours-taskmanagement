@@ -5,13 +5,15 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { TaskComments } from "@/components/task-comments";
+import { TaskCard } from "@/components/task-card";
+import { TaskAttachmentModal } from "@/components/task-attachment-modal";
 import {
   ArrowLeft,
   CalendarDays,
   CalendarCheck,
   User2,
   Tag,
-  Paperclip,
   CircleDashed,
   CircleDot,
   Clock,
@@ -20,10 +22,7 @@ import {
   AlertCircle,
   FolderOpen,
   Hash,
-  ExternalLink,
-  FileText,
-  FileImage,
-  FileSpreadsheet,
+  GitBranch,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -118,14 +117,6 @@ function isOverdue(dateStr?: string | null) {
   return new Date(dateStr) < new Date();
 }
 
-function AttachmentIcon({ type }: { type: string }) {
-  if (type === "IMAGE") return <FileImage className="h-4 w-4 text-blue-500" />;
-  if (type === "PDF") return <FileText className="h-4 w-4 text-red-500" />;
-  if (type === "EXCEL")
-    return <FileSpreadsheet className="h-4 w-4 text-emerald-500" />;
-  return <FileText className="h-4 w-4 text-muted-foreground" />;
-}
-
 interface MetaRowProps {
   icon: React.ReactNode;
   label: string;
@@ -165,28 +156,6 @@ export default async function TaskDetailPage({
 
   if (error || !task) return notFound();
 
-  // Fetch assigned user profile
-  let assignedUser: User | null = null;
-  if (task.assigned_to) {
-    const { data } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", task.assigned_to)
-      .single();
-    assignedUser = data;
-  }
-
-  // Fetch creator profile
-  let createdByUser: User | null = null;
-  if (task.created_by) {
-    const { data } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", task.created_by)
-      .single();
-    createdByUser = data;
-  }
-
   const typedTask = task as Task;
   const priority = priorityConfig[typedTask.priority];
   const status = statusConfig[typedTask.status];
@@ -196,14 +165,50 @@ export default async function TaskDetailPage({
     typedTask.status !== TaskStatus.CANCELLED;
   const isOwner = currentUser?.id === typedTask.created_by;
 
+  const [assignedUserRes, createdByUserRes, parentTaskRes, subtasksRes] =
+    await Promise.all([
+      typedTask.assigned_to
+        ? supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", typedTask.assigned_to)
+            .single()
+        : Promise.resolve({ data: null }),
+      typedTask.created_by
+        ? supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", typedTask.created_by)
+            .single()
+        : Promise.resolve({ data: null }),
+      typedTask.parent_id
+        ? supabase
+            .from("tasks")
+            .select("*")
+            .eq("id", typedTask.parent_id)
+            .single()
+        : Promise.resolve({ data: null }),
+      supabase
+        .from("tasks")
+        .select("*")
+        .eq("parent_id", id)
+        .eq("is_archived", false),
+    ]);
+
+  const assignedUser = assignedUserRes.data as User | null;
+  const createdByUser = createdByUserRes.data as User | null;
+  const parentTask = parentTaskRes.data as Task | null;
+  const subtasks = (subtasksRes.data ?? []) as Task[];
+
   return (
-    <div className="bg-background">
+    <div className="min-h-screen bg-background border border-border rounded-lg shadow-sm">
       {/* Top Bar */}
-      <div className="bg-background/95">
+      <div className="sticky top-0 z-10 border-border">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
           <Link href="/task">
-            <Button variant="ghost" size="sm" className="gap-2 -ml-2">
-              <ArrowLeft className="h-4 w-4" /> Back
+            <Button variant="ghost" size="sm" className="gap-1.5 -ml-2">
+              <ArrowLeft className="h-4 w-4" />
+              <span className="">Tasks</span>
             </Button>
           </Link>
           {isOwner && (
@@ -217,10 +222,23 @@ export default async function TaskDetailPage({
       </div>
 
       <div className="max-w-3xl mx-auto px-4 py-6 space-y-5">
+        {/* Parent task breadcrumb */}
+        {parentTask && (
+          <Link
+            href={`/task/${parentTask.id}`}
+            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <GitBranch className="h-3.5 w-3.5" />
+            Subtask of:{" "}
+            <span className="underline underline-offset-2">
+              {parentTask.title}
+            </span>
+          </Link>
+        )}
+
         {/* Title block */}
         <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-2">
-            {/* Status badge */}
             <span
               className={cn(
                 "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold",
@@ -231,7 +249,6 @@ export default async function TaskDetailPage({
               {status.icon}
               {status.label}
             </span>
-            {/* Priority badge */}
             <span
               className={cn(
                 "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold",
@@ -272,7 +289,7 @@ export default async function TaskDetailPage({
           </Card>
         )}
 
-        {/* Details Card */}
+        {/* Details */}
         <Card className="px-5 py-1 gap-0 divide-y divide-border/60">
           <MetaRow icon={<User2 className="h-4 w-4" />} label="Assigned To">
             {assignedUser ? (
@@ -360,39 +377,43 @@ export default async function TaskDetailPage({
         </Card>
 
         {/* Attachments */}
-        {typedTask.attachments?.length > 0 && (
-          <Card className="px-5 py-4 gap-3">
+        <TaskAttachmentModal
+          taskId={id}
+          currentUserId={currentUser?.id ?? null}
+          assignedTo={typedTask.assigned_to ?? null}
+          initialAttachments={typedTask.attachments ?? []}
+        />
+
+        {/* Subtasks */}
+        {subtasks.length > 0 && (
+          <div className="space-y-3">
             <div className="flex items-center gap-2 text-muted-foreground">
-              <Paperclip className="h-4 w-4" />
-              <p className="text-xs font-semibold uppercase tracking-wider">
-                Attachments ({typedTask.attachments.length})
-              </p>
+              <GitBranch className="h-4 w-4" />
+              <span className="text-xs font-semibold uppercase tracking-wider">
+                Subtasks ({subtasks.length})
+              </span>
             </div>
-            <div className="space-y-2">
-              {typedTask.attachments.map((att, idx) => (
-                <a
-                  key={idx}
-                  href={att.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted/60 transition-colors group"
-                >
-                  <AttachmentIcon type={att.type} />
-                  <span className="flex-1 text-sm truncate">
-                    {att.name ?? att.url}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded uppercase">
-                    {att.type}
-                  </span>
-                  <ExternalLink className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                </a>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {subtasks.map((sub) => (
+                <TaskCard key={sub.id} task={sub} />
               ))}
             </div>
-          </Card>
+          </div>
         )}
 
-        {/* Footer timestamps */}
-        <div className="flex flex-col sm:flex-row justify-between gap-1 text-xs text-muted-foreground pt-2">
+        {/* Comments */}
+        <Card className="px-5 py-5 gap-4">
+          {currentUser ? (
+            <TaskComments taskId={id} currentUserId={currentUser.id} />
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-4">
+              Sign in to view and post comments.
+            </p>
+          )}
+        </Card>
+
+        {/* Timestamps */}
+        <div className="flex flex-col sm:flex-row justify-between gap-1 text-xs text-muted-foreground pt-2 pb-8">
           <span>Created {formatDateTime(typedTask.created_at)}</span>
           <span>Updated {formatDateTime(typedTask.updated_at)}</span>
         </div>
