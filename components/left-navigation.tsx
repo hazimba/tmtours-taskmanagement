@@ -98,7 +98,7 @@ const LeftNavigation = ({ children }: LeftNavigationProps) => {
 
         {/* Main Content Area */}
         <main className="flex w-full p-4 pb-20 md:pb-0 md:p-6 gap-4">
-          <div className="md:w-8/10 w-full md:px-1 scrollbar-hide overflow-y-auto">
+          <div className="md:w-8/10 w-full pb-40 md:px-1 scrollbar-hide overflow-y-auto">
             {children}
           </div>
           <div className="w-2/10 hidden lg:block p-1">
