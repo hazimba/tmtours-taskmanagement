@@ -25,7 +25,7 @@ const BottomNav = () => {
   return (
     <Tabs
       value={active}
-      className="w-full items-center justify-center fixed bottom-10 text-white px-4"
+      className="w-full items-center justify-center fixed bottom-6 text-white px-4"
     >
       <TabsList className="grid grid-cols-4 items-center w-full">
         {items.map(({ href, label, icon: Icon }) => (
