@@ -18,7 +18,9 @@ export function SidebarPanel() {
 
   useEffect(() => {
     async function load() {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       setCurrentUserId(user?.id ?? null);
       const [{ data: tasksData }, { data: profileData }] = await Promise.all([
         supabase.from("tasks").select("*").eq("is_archived", false),
@@ -30,13 +32,18 @@ export function SidebarPanel() {
       setProfile((profileData as User) ?? null);
     }
     load();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (pathname === "/home") return <HomePanel profile={profile} />;
-  if (pathname.startsWith("/task/list")) return <ListPanel tasks={tasks} currentUserId={currentUserId} />;
-  if (pathname === "/task" || (pathname.startsWith("/task/") && !pathname.startsWith("/task/list")))
+  if (pathname.startsWith("/task/list"))
+    return <ListPanel tasks={tasks} currentUserId={currentUserId} />;
+  if (
+    pathname === "/task" ||
+    (pathname.startsWith("/task/") && !pathname.startsWith("/task/list"))
+  )
     return <BoardPanel tasks={tasks} />;
-  if (pathname.startsWith("/profile")) return <ProfilePanel profile={profile} />;
+  if (pathname.startsWith("/profile"))
+    return <ProfilePanel profile={profile} />;
   return null;
 }

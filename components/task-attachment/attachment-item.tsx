@@ -1,12 +1,20 @@
 "use client";
 
 import { TaskAttachment } from "@/types";
-import { FileText, FileImage, FileSpreadsheet, File, ExternalLink, X } from "lucide-react";
+import {
+  FileText,
+  FileImage,
+  FileSpreadsheet,
+  File,
+  ExternalLink,
+  X,
+} from "lucide-react";
 
 function AttachmentIcon({ type }: { type: string }) {
   if (type === "IMAGE") return <FileImage className="h-4 w-4 text-blue-500" />;
   if (type === "PDF") return <FileText className="h-4 w-4 text-red-500" />;
-  if (type === "EXCEL") return <FileSpreadsheet className="h-4 w-4 text-emerald-500" />;
+  if (type === "EXCEL")
+    return <FileSpreadsheet className="h-4 w-4 text-emerald-500" />;
   if (type === "DOC") return <FileText className="h-4 w-4 text-blue-400" />;
   return <File className="h-4 w-4 text-muted-foreground" />;
 }
@@ -28,15 +36,28 @@ interface AttachmentItemProps {
   onRemove: () => void;
 }
 
-export function AttachmentItem({ attachment, isAssignee, onRemove }: AttachmentItemProps) {
+export function AttachmentItem({
+  attachment,
+  isAssignee,
+  onRemove,
+}: AttachmentItemProps) {
   return (
     <div className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted/40 transition-colors group">
       <AttachmentIcon type={attachment.type} />
-      <a href={attachment.url} target="_blank" rel="noopener noreferrer" className="flex-1 min-w-0 flex items-center gap-2">
+      <a
+        href={attachment.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex-1 min-w-0 flex items-center gap-2"
+      >
         <div className="min-w-0">
-          <p className="text-sm truncate">{attachment.name ?? attachment.url}</p>
+          <p className="text-sm truncate">
+            {attachment.name ?? attachment.url}
+          </p>
           {attachment.uploaded_at && (
-            <p className="text-[10px] text-muted-foreground mt-0.5">{formatUploadedAt(attachment.uploaded_at)}</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">
+              {formatUploadedAt(attachment.uploaded_at)}
+            </p>
           )}
         </div>
         <ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />

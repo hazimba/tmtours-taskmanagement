@@ -98,14 +98,20 @@ export function TaskFilters({
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {/* Status */}
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</label>
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Status
+            </label>
             <Select value={filterStatus} onValueChange={onFilterStatus}>
-              <SelectTrigger className="h-8 text-xs w-full"><SelectValue placeholder="All statuses" /></SelectTrigger>
+              <SelectTrigger className="h-8 text-xs w-full">
+                <SelectValue placeholder="All statuses" />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All statuses</SelectItem>
                 {Object.entries(STATUS_META).map(([v, m]) => (
                   <SelectItem key={v} value={v}>
-                    <span className={cn("flex items-center gap-1.5", m.color)}>{m.icon} {m.label}</span>
+                    <span className={cn("flex items-center gap-1.5", m.color)}>
+                      {m.icon} {m.label}
+                    </span>
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -114,13 +120,19 @@ export function TaskFilters({
 
           {/* Priority */}
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Priority</label>
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Priority
+            </label>
             <Select value={filterPriority} onValueChange={onFilterPriority}>
-              <SelectTrigger className="h-8 text-xs w-full"><SelectValue placeholder="All priorities" /></SelectTrigger>
+              <SelectTrigger className="h-8 text-xs w-full">
+                <SelectValue placeholder="All priorities" />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All priorities</SelectItem>
                 {Object.entries(PRIORITY_META).map(([v, m]) => (
-                  <SelectItem key={v} value={v}>{m.label}</SelectItem>
+                  <SelectItem key={v} value={v}>
+                    {m.label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -128,14 +140,20 @@ export function TaskFilters({
 
           {/* Assignee */}
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Assignee</label>
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Assignee
+            </label>
             <Select value={filterAssignee} onValueChange={onFilterAssignee}>
-              <SelectTrigger className="h-8 text-xs w-full"><SelectValue placeholder="All assignees" /></SelectTrigger>
+              <SelectTrigger className="h-8 text-xs w-full">
+                <SelectValue placeholder="All assignees" />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All assignees</SelectItem>
                 <SelectItem value="unassigned">Unassigned</SelectItem>
                 {users.map((u) => (
-                  <SelectItem key={u.id} value={u.id}>{u.full_name}</SelectItem>
+                  <SelectItem key={u.id} value={u.id}>
+                    {u.full_name}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -143,9 +161,13 @@ export function TaskFilters({
 
           {/* Due Date */}
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Due Date</label>
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Due Date
+            </label>
             <Select value={filterDue} onValueChange={onFilterDue}>
-              <SelectTrigger className="h-8 text-xs w-full"><SelectValue placeholder="Any due date" /></SelectTrigger>
+              <SelectTrigger className="h-8 text-xs w-full">
+                <SelectValue placeholder="Any due date" />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Any due date</SelectItem>
                 <SelectItem value="overdue">Overdue</SelectItem>
@@ -165,8 +187,12 @@ export function TaskFilters({
               onChange={(e) => onFilterParentOnly(e.target.checked)}
               className="h-4 w-4 rounded border-border accent-primary"
             />
-            <span className="text-xs font-medium text-foreground">Main tasks only</span>
-            <span className="text-[10px] text-muted-foreground">(no parent)</span>
+            <span className="text-xs font-medium text-foreground">
+              Main tasks only
+            </span>
+            <span className="text-[10px] text-muted-foreground">
+              (no parent)
+            </span>
           </label>
           <label className="flex items-center gap-2 cursor-pointer select-none">
             <input
@@ -175,8 +201,12 @@ export function TaskFilters({
               onChange={(e) => onFilterHasSubtasks(e.target.checked)}
               className="h-4 w-4 rounded border-border accent-primary"
             />
-            <span className="text-xs font-medium text-foreground">Has subtasks</span>
-            <span className="text-[10px] text-muted-foreground">(parent tasks only)</span>
+            <span className="text-xs font-medium text-foreground">
+              Has subtasks
+            </span>
+            <span className="text-[10px] text-muted-foreground">
+              (parent tasks only)
+            </span>
           </label>
         </div>
       </div>
@@ -188,25 +218,39 @@ export function TaskFilters({
           {filterStatus !== "all" && (
             <Badge variant="secondary" className="gap-1 text-xs">
               {STATUS_META[filterStatus as TaskStatus]?.label}
-              <button onClick={() => onFilterStatus("all")}><X className="h-3 w-3" /></button>
+              <button onClick={() => onFilterStatus("all")}>
+                <X className="h-3 w-3" />
+              </button>
             </Badge>
           )}
           {filterPriority !== "all" && (
             <Badge variant="secondary" className="gap-1 text-xs">
               {PRIORITY_META[filterPriority as TaskPriority]?.label}
-              <button onClick={() => onFilterPriority("all")}><X className="h-3 w-3" /></button>
+              <button onClick={() => onFilterPriority("all")}>
+                <X className="h-3 w-3" />
+              </button>
             </Badge>
           )}
           {filterAssignee !== "all" && (
             <Badge variant="secondary" className="gap-1 text-xs">
-              {filterAssignee === "unassigned" ? "Unassigned" : users.find((u) => u.id === filterAssignee)?.full_name}
-              <button onClick={() => onFilterAssignee("all")}><X className="h-3 w-3" /></button>
+              {filterAssignee === "unassigned"
+                ? "Unassigned"
+                : users.find((u) => u.id === filterAssignee)?.full_name}
+              <button onClick={() => onFilterAssignee("all")}>
+                <X className="h-3 w-3" />
+              </button>
             </Badge>
           )}
           {filterDue !== "all" && (
             <Badge variant="secondary" className="gap-1 text-xs">
-              {filterDue === "overdue" ? "Overdue" : filterDue === "this_week" ? "Due within 1 week" : "No due date"}
-              <button onClick={() => onFilterDue("all")}><X className="h-3 w-3" /></button>
+              {filterDue === "overdue"
+                ? "Overdue"
+                : filterDue === "this_week"
+                ? "Due within 1 week"
+                : "No due date"}
+              <button onClick={() => onFilterDue("all")}>
+                <X className="h-3 w-3" />
+              </button>
             </Badge>
           )}
         </div>

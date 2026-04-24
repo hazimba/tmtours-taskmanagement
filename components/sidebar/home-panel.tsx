@@ -18,9 +18,19 @@ export function HomePanel({ profile }: { profile: User | null }) {
             </AvatarFallback>
           </Avatar>
           <div>
-            <p className="text-sm font-semibold leading-tight">{profile?.full_name ?? "—"}</p>
-            {profile?.position && <p className="text-[11px] text-muted-foreground mt-0.5">{profile.position}</p>}
-            {profile?.department && <p className="text-[11px] text-muted-foreground">{profile.department}</p>}
+            <p className="text-sm font-semibold leading-tight">
+              {profile?.full_name ?? "—"}
+            </p>
+            {profile?.position && (
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                {profile.position}
+              </p>
+            )}
+            {profile?.department && (
+              <p className="text-[11px] text-muted-foreground">
+                {profile.department}
+              </p>
+            )}
             {profile?.role && (
               <span className="inline-block mt-1.5 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
                 {profile.role}

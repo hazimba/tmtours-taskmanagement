@@ -10,7 +10,12 @@ interface PaginationProps {
   onPageChange: (p: number) => void;
 }
 
-export function Pagination({ page, totalPages, totalCount, onPageChange }: PaginationProps) {
+export function Pagination({
+  page,
+  totalPages,
+  totalCount,
+  onPageChange,
+}: PaginationProps) {
   if (totalPages <= 1) return null;
 
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1)
@@ -28,7 +33,9 @@ export function Pagination({ page, totalPages, totalCount, onPageChange }: Pagin
       </span>
       <div className="flex items-center gap-1">
         <Button
-          variant="outline" size="sm" className="h-7 w-7 p-0"
+          variant="outline"
+          size="sm"
+          className="h-7 w-7 p-0"
           disabled={page === 1}
           onClick={() => onPageChange(page - 1)}
         >
@@ -36,7 +43,12 @@ export function Pagination({ page, totalPages, totalCount, onPageChange }: Pagin
         </Button>
         {pages.map((p, i) =>
           p === "…" ? (
-            <span key={`ellipsis-${i}`} className="text-xs text-muted-foreground px-1">…</span>
+            <span
+              key={`ellipsis-${i}`}
+              className="text-xs text-muted-foreground px-1"
+            >
+              …
+            </span>
           ) : (
             <Button
               key={p}
@@ -50,7 +62,9 @@ export function Pagination({ page, totalPages, totalCount, onPageChange }: Pagin
           )
         )}
         <Button
-          variant="outline" size="sm" className="h-7 w-7 p-0"
+          variant="outline"
+          size="sm"
+          className="h-7 w-7 p-0"
           disabled={page === totalPages}
           onClick={() => onPageChange(page + 1)}
         >
