@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Task, TaskPriority, TaskStatus, User } from "@/types";
 import {
   Plus,
@@ -17,8 +18,10 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
-  Filter,
   X,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -165,9 +168,15 @@ export function TaskListView({
     currentUser ? currentUser.id : "all"
   );
   const [filterDue, setFilterDue] = useState<string>("all");
+  const [filterParentOnly, setFilterParentOnly] = useState(false);
+  const [filterHasSubtasks, setFilterHasSubtasks] = useState(false);
   const [sortField, setSortField] = useState<SortField>("created_at");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
-  const [showFilters, setShowFilters] = useState(true);
+  const [showFilters] = useState(true);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 20;
+  const [loadingId, setLoadingId] = useState<string | null>(null);
+  const router = useRouter();
 
   function toggleSort(field: SortField) {
     if (sortField === field) {
@@ -179,6 +188,11 @@ export function TaskListView({
   }
 
   const filtered = useMemo(() => {
+    // build set of task ids that have at least one child
+    const parentIds = new Set(
+      initialTasks.map((t) => t.parent_id).filter(Boolean)
+    );
+
     let list = [...initialTasks];
 
     if (search.trim()) {
@@ -220,6 +234,10 @@ export function TaskListView({
       list = list.filter((t) => !t.due_date);
     }
 
+    // Subtask filters (toggleable, can combine)
+    if (filterParentOnly) list = list.filter((t) => !t.parent_id);
+    if (filterHasSubtasks) list = list.filter((t) => parentIds.has(t.id));
+
     list.sort((a, b) => {
       let cmp = 0;
       switch (sortField) {
@@ -253,15 +271,21 @@ export function TaskListView({
     filterPriority,
     filterAssignee,
     filterDue,
+    filterParentOnly,
+    filterHasSubtasks,
     sortField,
     sortDir,
   ]);
 
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
   const activeFilterCount = [
-    filterStatus !== "all",
     filterPriority !== "all",
     filterAssignee !== "all",
     filterDue !== "all",
+    filterParentOnly,
+    filterHasSubtasks,
   ].filter(Boolean).length;
 
   function clearFilters() {
@@ -269,7 +293,10 @@ export function TaskListView({
     setFilterPriority("all");
     setFilterAssignee("all");
     setFilterDue("all");
+    setFilterParentOnly(false);
+    setFilterHasSubtasks(false);
     setSearch("");
+    setPage(1);
   }
 
   return (
@@ -277,7 +304,7 @@ export function TaskListView({
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 scrollbar-hide">
         <div>
-          <h1 className="text-xl font-bold tracking-tight">TASKS LIST</h1>
+          <h1 className="text-xl font-bold tracking-widest">TASKS LIST</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
             {filtered.length} of {initialTasks.length} tasks
           </p>
@@ -349,7 +376,13 @@ export function TaskListView({
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 Status
               </label>
-              <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <Select
+                value={filterStatus}
+                onValueChange={(v) => {
+                  setFilterStatus(v);
+                  setPage(1);
+                }}
+              >
                 <SelectTrigger className="h-8 text-xs w-full">
                   <SelectValue placeholder="All statuses" />
                 </SelectTrigger>
@@ -387,6 +420,8 @@ export function TaskListView({
               </Select>
             </div>
 
+            {/* to add another one, show main task (that have subtasks) */}
+
             <div className="space-y-1">
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 Assignee
@@ -411,7 +446,13 @@ export function TaskListView({
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 Due Date
               </label>
-              <Select value={filterDue} onValueChange={setFilterDue}>
+              <Select
+                value={filterDue}
+                onValueChange={(v) => {
+                  setFilterDue(v);
+                  setPage(1);
+                }}
+              >
                 <SelectTrigger className="h-8 text-xs w-full">
                   <SelectValue placeholder="Any due date" />
                 </SelectTrigger>
@@ -423,6 +464,43 @@ export function TaskListView({
                 </SelectContent>
               </Select>
             </div>
+          </div>
+          {/* Subtask toggles */}
+          <div className="flex flex-wrap gap-4 pt-1">
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={filterParentOnly}
+                onChange={(e) => {
+                  setFilterParentOnly(e.target.checked);
+                  setPage(1);
+                }}
+                className="h-4 w-4 rounded border-border accent-primary"
+              />
+              <span className="text-xs font-medium text-foreground">
+                Main tasks only
+              </span>
+              <span className="text-[10px] text-muted-foreground">
+                (no parent)
+              </span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={filterHasSubtasks}
+                onChange={(e) => {
+                  setFilterHasSubtasks(e.target.checked);
+                  setPage(1);
+                }}
+                className="h-4 w-4 rounded border-border accent-primary"
+              />
+              <span className="text-xs font-medium text-foreground">
+                Has subtasks
+              </span>
+              <span className="text-[10px] text-muted-foreground">
+                (parent tasks only)
+              </span>
+            </label>
           </div>
         </div>
       )}
@@ -553,7 +631,7 @@ export function TaskListView({
           </div>
         ) : (
           <div className="divide-y divide-border">
-            {filtered.map((task) => {
+            {paged.map((task) => {
               const overdue =
                 isOverdue(task.due_date) &&
                 task.status !== TaskStatus.COMPLETED &&
@@ -566,12 +644,17 @@ export function TaskListView({
               const statusMeta = STATUS_META[task.status];
               const priorityMeta = PRIORITY_META[task.priority];
               const assignee = users.find((u) => u.id === task.assigned_to);
+              const isLoading = loadingId === task.id;
 
               return (
-                <Link
+                <div
                   key={task.id}
-                  href={`/task/${task.id}`}
-                  className="flex sm:grid sm:grid-cols-[1fr_160px_110px_140px_120px] px-4 py-3 hover:bg-muted/40 transition-colors items-center gap-3 sm:gap-0 group"
+                  onClick={() => {
+                    if (loadingId) return;
+                    setLoadingId(task.id);
+                    router.push(`/task/${task.id}`);
+                  }}
+                  className="flex sm:grid sm:grid-cols-[1fr_160px_110px_140px_120px_40px] px-4 py-3 hover:bg-muted/40 transition-colors items-center gap-3 sm:gap-0 group cursor-pointer"
                 >
                   {/* Title + sub-meta */}
                   <div className="flex-1 min-w-0 sm:pr-4">
@@ -696,12 +779,77 @@ export function TaskListView({
                   >
                     {statusMeta.icon}
                   </span>
-                </Link>
+
+                  {/* Loading spinner — desktop */}
+                  <div className="flex items-center justify-end">
+                    {isLoading && (
+                      <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                    )}
+                  </div>
+                </div>
               );
             })}
           </div>
         )}
       </div>
+
+      {/* ── Pagination ── */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between px-1 pt-1">
+          <span className="text-xs text-muted-foreground">
+            Page {page} of {totalPages} &middot; {filtered.length} tasks
+          </span>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 w-7 p-0"
+              disabled={page === 1}
+              onClick={() => setPage((p) => p - 1)}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter(
+                (p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1
+              )
+              .reduce<(number | "…")[]>((acc, p, idx, arr) => {
+                if (idx > 0 && p - (arr[idx - 1] as number) > 1) acc.push("…");
+                acc.push(p);
+                return acc;
+              }, [])
+              .map((p, i) =>
+                p === "…" ? (
+                  <span
+                    key={`ellipsis-${i}`}
+                    className="text-xs text-muted-foreground px-1"
+                  >
+                    …
+                  </span>
+                ) : (
+                  <Button
+                    key={p}
+                    variant={page === p ? "default" : "outline"}
+                    size="sm"
+                    className="h-7 w-7 p-0 text-xs"
+                    onClick={() => setPage(p as number)}
+                  >
+                    {p}
+                  </Button>
+                )
+              )}
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 w-7 p-0"
+              disabled={page === totalPages}
+              onClick={() => setPage((p) => p + 1)}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

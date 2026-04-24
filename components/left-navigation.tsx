@@ -1,11 +1,17 @@
 "use client"; // Ensure this is at the top of your file
 
-import { useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react"; // Icons for the toggle
 import { cn } from "@/lib/utils"; // Assuming you use shadcn/ui utility
+import {
+  Bell,
+  ChevronLeft,
+  ChevronRight,
+  Home,
+  List,
+  User,
+} from "lucide-react"; // Icons for the toggle
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LogOut, Home, Bell, User, List } from "lucide-react";
+import { useState } from "react";
 import { Card } from "./ui/card";
 
 interface LeftNavigationProps {
@@ -28,7 +34,7 @@ const LeftNavigation = ({ children }: LeftNavigationProps) => {
         {/* Dynamic Sidebar */}
         <aside
           className={`relative flex flex-col bg-white dark:bg-card transition-all duration-300 md:block hidden ${
-            isCollapsed ? "w-[55px]" : "w-[200px]"
+            isCollapsed ? "w-[52px]" : "w-[200px]"
           }`}
         >
           {/* Toggle Button - Positioned at the top right of the sidebar */}
@@ -41,9 +47,9 @@ const LeftNavigation = ({ children }: LeftNavigationProps) => {
             }`}
           >
             {isCollapsed ? (
-              <ChevronRight className="h-6 w-6" />
+              <ChevronRight className="h-6 w-6 cursor-pointer" />
             ) : (
-              <ChevronLeft className="h-6 w-6" />
+              <ChevronLeft className="h-6 w-6 cursor-pointer" />
             )}
           </button>
 
@@ -97,8 +103,9 @@ const LeftNavigation = ({ children }: LeftNavigationProps) => {
         </aside>
 
         {/* Main Content Area */}
-        <main className="flex w-full p-4 pb-20 md:pb-0 md:p-6 gap-4">
-          <div className="md:w-8/10 w-full pb-40 md:px-1 scrollbar-hide overflow-y-auto">
+        <main className="flex w-full md:ml-4 p-4 pb-20 md:pb-0 md:p-6 gap-4">
+          {/* decrease the pb-40 later */}
+          <div className="md:w-8/10 w-full pb-20 md:px-1 scrollbar-hide overflow-y-auto">
             {children}
           </div>
           <div className="w-2/10 hidden lg:block p-1">

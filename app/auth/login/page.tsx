@@ -76,12 +76,12 @@ const LoginIn = () => {
       <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000"></div>
       <div className="absolute -bottom-8 right-20 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
 
-      <Card className="relative w-full max-w-md shadow-2xl bg-white/80 backdrop-blur-xl border-white/20 z-10">
+      <Card className="relative w-full max-w-md shadow-2xl bg-white/80 dark:bg-card backdrop-blur-xl border-white/20 z-10">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-3xl font-extrabold tracking-tight text-slate-900">
+          <CardTitle className="text-3xl font-extrabold tracking-tight">
             Admin Login
           </CardTitle>
-          <CardDescription className="text-slate-500 text-base">
+          <CardDescription className="text-base">
             Enter your credentials to access your account
           </CardDescription>
         </CardHeader>
@@ -92,10 +92,7 @@ const LoginIn = () => {
         >
           <CardContent className="grid gap-6">
             <Field className="space-y-2">
-              <FieldLabel
-                className="font-semibold text-slate-700"
-                htmlFor="email"
-              >
+              <FieldLabel className="font-semibold" htmlFor="email">
                 Email
               </FieldLabel>
               <Input
@@ -114,10 +111,7 @@ const LoginIn = () => {
             </Field>
 
             <Field className="space-y-2 pb-4">
-              <FieldLabel
-                className="font-semibold text-slate-700"
-                htmlFor="password"
-              >
+              <FieldLabel className="font-semibold" htmlFor="password">
                 Password
               </FieldLabel>
               <Input
