@@ -25,14 +25,14 @@ const BottomNav = () => {
   return (
     <Tabs
       value={active}
-      className="w-full items-center fixed bottom-5 text-white border-none bg-transparent"
+      className="w-full items-center justify-center fixed bottom-10 text-white px-4"
     >
-      <TabsList className="">
+      <TabsList className="grid grid-cols-4 items-center w-full">
         {items.map(({ href, label, icon: Icon }) => (
-          <TabsTrigger key={href} value={href} asChild className="px-3 text-xs">
+          <TabsTrigger key={href} value={href} asChild className="text-xs">
             <Link href={href}>
               <Icon className="size-4" />
-              <span>{label}</span>
+              <span className="">{label}</span>
             </Link>
           </TabsTrigger>
         ))}

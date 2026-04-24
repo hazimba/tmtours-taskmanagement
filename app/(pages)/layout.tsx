@@ -1,18 +1,13 @@
 "use client";
 
-import Link from "next/link";
-import Image from "next/image";
-import { LogOut, Home, Bell, User, List } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { ModeToggle } from "@/components/mode-toggle";
-import BottomNav from "./bottom-nav";
-import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
 import LeftNavigation from "@/components/left-navigation";
+import { ModeToggle } from "@/components/mode-toggle";
+import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
+import Link from "next/link";
+import BottomNav from "./bottom-nav";
 
 const PageLayout = ({ children }: { children: React.ReactNode }) => {
-  const pathname = usePathname();
-
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-background">
       {/* Unified Top Header - One Div for Logo and Actions */}
@@ -53,8 +48,6 @@ const PageLayout = ({ children }: { children: React.ReactNode }) => {
           </div>
         </div>
       </header>
-
-      {/* Main Layout Body (Sidebar + Content) */}
 
       {/* Sidebar - Now starts below the header */}
       <LeftNavigation>{children}</LeftNavigation>
