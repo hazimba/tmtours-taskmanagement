@@ -117,7 +117,7 @@ const ProfilePage = async () => {
   if (!data.avatar_url) incompleteFields.push("Profile photo");
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4">
+    <div className="mx-auto w-full max-w-3xl">
       <div className="relative overflow-hidden rounded-2xl ring-1 ring-foreground/10">
         <div className="h-32 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 sm:h-40" />
 

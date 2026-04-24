@@ -1,17 +1,18 @@
-"use client"; // Ensure this is at the top of your file
+"use client";
 
-import { cn } from "@/lib/utils"; // Assuming you use shadcn/ui utility
+import { cn } from "@/lib/utils";
 import {
   Bell,
   ChevronLeft,
   ChevronRight,
   Home,
   List,
+  PanelRight,
   User,
-} from "lucide-react"; // Icons for the toggle
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SidebarPanel } from "./sidebar-panel";
 
 interface LeftNavigationProps {
@@ -19,6 +20,9 @@ interface LeftNavigationProps {
 }
 
 const LeftNavigation = ({ children }: LeftNavigationProps) => {
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+  const mobileSidebarRef = useRef<HTMLDivElement>(null);
+
   const sidebarItems = [
     { href: "/home", label: "Home", icon: Home },
     { href: "/task", label: "Board", icon: Bell },
@@ -28,16 +32,31 @@ const LeftNavigation = ({ children }: LeftNavigationProps) => {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
+  // Close mobile sidebar when clicking outside
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        mobileSidebarRef.current &&
+        !mobileSidebarRef.current.contains(e.target as Node)
+      ) {
+        setShowMobileSidebar(false);
+      }
+    }
+    if (showMobileSidebar) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showMobileSidebar]);
+
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-background">
       <div className="flex flex-1 overflow-hidden md:pb-0">
-        {/* Dynamic Sidebar */}
+        {/* Desktop Left Sidebar */}
         <aside
           className={`relative flex flex-col bg-white dark:bg-card transition-all duration-300 md:block hidden ${
             isCollapsed ? "w-[52px]" : "w-[200px]"
           }`}
         >
-          {/* Toggle Button - Positioned at the top right of the sidebar */}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
             className={`absolute -right-5.5 top-4 z-50 bg-background rounded-full border px-2 py-2 hover:bg-muted transition-all ${
@@ -80,17 +99,14 @@ const LeftNavigation = ({ children }: LeftNavigationProps) => {
                     isActive
                       ? "bg-primary text-primary-foreground shadow-sm"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                    // Adjust padding and alignment based on state
                     isCollapsed
-                      ? "justify-start px-3 py-2.5 transition-all duration-300"
+                      ? "justify-start px-3 py-2.5"
                       : "gap-3 px-3 py-2.5"
                   )}
                 >
                   <Icon
                     className={cn("h-4 w-4 shrink-0", isCollapsed && "h-5 w-5")}
                   />
-
-                  {/* Hide text when collapsed */}
                   {!isCollapsed && (
                     <span className="truncate opacity-100 transition-opacity duration-300">
                       {label}
@@ -103,17 +119,55 @@ const LeftNavigation = ({ children }: LeftNavigationProps) => {
         </aside>
 
         {/* Main Content Area */}
-        <main className="flex w-full md:ml-4 p-4 pb-20 md:pb-0 md:p-6 gap-4">
-          {/* decrease the pb-40 later */}
+        <main className="flex w-full md:ml-4 p-4 md:pb-0 md:p-6 gap-4">
           <div className="md:w-8/10 w-full pb-20 md:px-1 scrollbar-hide overflow-y-auto">
             {children}
           </div>
+
+          {/* Desktop: right sidebar panel */}
           <div className="w-2/10 hidden lg:block p-1 overflow-y-auto scrollbar-hide">
             <SidebarPanel />
           </div>
+
+          {/* Mobile only: floating trigger button (hidden on lg+) */}
+          <button
+            onClick={() => setShowMobileSidebar((v) => !v)}
+            className="lg:hidden fixed top-24 right-4 z-[100] bg-background border border-border rounded-full p-2.5 shadow-md hover:bg-muted transition-all duration-300"
+            aria-label="Open sidebar panel"
+          >
+            <PanelRight className="h-5 w-5 text-muted-foreground" />
+          </button>
+
+          {/* Mobile only: floating sidebar panel overlay (always mounted for animation) */}
+          <>
+            {/* Backdrop */}
+            <div
+              onClick={() => setShowMobileSidebar(false)}
+              className={`lg:hidden fixed inset-0 z-[99] bg-black/20 backdrop-blur-[1px] transition-opacity duration-300 ${
+                showMobileSidebar
+                  ? "opacity-100 pointer-events-auto"
+                  : "opacity-0 pointer-events-none"
+              }`}
+            />
+            {/* Slide-in panel */}
+            <div
+              ref={mobileSidebarRef}
+              className={`lg:hidden fixed top-0 right-0 z-[9999] h-full w-72 bg-background border-l border-border shadow-xl overflow-y-auto p-4 scrollbar-hide transition-transform duration-300 ease-in-out ${
+                showMobileSidebar ? "translate-x-0" : "translate-x-full"
+              }`}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Info Panel
+                </span>
+              </div>
+              <SidebarPanel />
+            </div>
+          </>
         </main>
       </div>
     </div>
   );
 };
+
 export default LeftNavigation;
