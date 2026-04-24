@@ -24,7 +24,7 @@ const LeftNavigation = ({ children }: LeftNavigationProps) => {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-background">
-      <div className="flex flex-1 overflow-hidden pb-20 md:pb-0">
+      <div className="flex flex-1 overflow-hidden md:pb-0">
         {/* Dynamic Sidebar */}
         <aside
           className={`relative flex flex-col bg-white dark:bg-card transition-all duration-300 md:block hidden ${
@@ -97,7 +97,7 @@ const LeftNavigation = ({ children }: LeftNavigationProps) => {
         </aside>
 
         {/* Main Content Area */}
-        <main className="flex w-full p-4 md:p-6 gap-4">
+        <main className="flex w-full p-4 pb-20 md:pb-0 md:p-6 gap-4">
           <div className="md:w-8/10 w-full md:px-1 scrollbar-hide overflow-y-auto">
             {children}
           </div>
