@@ -144,7 +144,7 @@ export function TaskCard({ task }: TaskCardProps) {
             {task.title}
           </h3>
           {task.description && (
-            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+            <p className="text-xs text-muted-foreground mt-1 line-clamp-2 truncate">
               {task.description}
             </p>
           )}
