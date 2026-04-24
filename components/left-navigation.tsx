@@ -24,7 +24,7 @@ const LeftNavigation = ({ children }: LeftNavigationProps) => {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-background">
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden pb-20 md:pb-0">
         {/* Dynamic Sidebar */}
         <aside
           className={`relative flex flex-col bg-white dark:bg-card transition-all duration-300 md:block hidden ${

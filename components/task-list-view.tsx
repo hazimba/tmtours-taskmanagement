@@ -31,6 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 // ─── config ───────────────────────────────────────────────────────────────────
 
@@ -149,13 +150,20 @@ function SortIcon({
 interface TaskListViewProps {
   initialTasks: Task[];
   users: Pick<User, "id" | "full_name" | "avatar_url">[];
+  currentUser?: User | null;
 }
 
-export function TaskListView({ initialTasks, users }: TaskListViewProps) {
+export function TaskListView({
+  initialTasks,
+  users,
+  currentUser,
+}: TaskListViewProps) {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterPriority, setFilterPriority] = useState<string>("all");
-  const [filterAssignee, setFilterAssignee] = useState<string>("all");
+  const [filterAssignee, setFilterAssignee] = useState<string>(
+    currentUser ? currentUser.id : "all"
+  );
   const [filterDue, setFilterDue] = useState<string>("all");
   const [sortField, setSortField] = useState<SortField>("created_at");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
@@ -301,7 +309,7 @@ export function TaskListView({ initialTasks, users }: TaskListViewProps) {
             </button>
           )}
         </div>
-        <Button
+        {/* <Button
           variant={showFilters ? "default" : "outline"}
           size="sm"
           className="h-9 gap-2 shrink-0"
@@ -314,19 +322,35 @@ export function TaskListView({ initialTasks, users }: TaskListViewProps) {
               {activeFilterCount}
             </span>
           )}
-        </Button>
+        </Button> */}
       </div>
 
       {/* ── Filter panel ── */}
       {showFilters && (
         <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+          <div className="flex items-center justify-between h-5">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Filters
+            </span>
+            {activeFilterCount > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-auto p-2 text-xs text-muted-foreground hover:text-foreground"
+                onClick={clearFilters}
+              >
+                <X className="h-3 w-3 mr-1" />
+                Clear all
+              </Button>
+            )}
+          </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="space-y-1">
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 Status
               </label>
               <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="h-8 text-xs">
+                <SelectTrigger className="h-8 text-xs w-full">
                   <SelectValue placeholder="All statuses" />
                 </SelectTrigger>
                 <SelectContent>
@@ -349,7 +373,7 @@ export function TaskListView({ initialTasks, users }: TaskListViewProps) {
                 Priority
               </label>
               <Select value={filterPriority} onValueChange={setFilterPriority}>
-                <SelectTrigger className="h-8 text-xs">
+                <SelectTrigger className="h-8 text-xs w-full">
                   <SelectValue placeholder="All priorities" />
                 </SelectTrigger>
                 <SelectContent>
@@ -368,7 +392,7 @@ export function TaskListView({ initialTasks, users }: TaskListViewProps) {
                 Assignee
               </label>
               <Select value={filterAssignee} onValueChange={setFilterAssignee}>
-                <SelectTrigger className="h-8 text-xs">
+                <SelectTrigger className="h-8 text-xs w-full">
                   <SelectValue placeholder="All assignees" />
                 </SelectTrigger>
                 <SelectContent>
@@ -388,7 +412,7 @@ export function TaskListView({ initialTasks, users }: TaskListViewProps) {
                 Due Date
               </label>
               <Select value={filterDue} onValueChange={setFilterDue}>
-                <SelectTrigger className="h-8 text-xs">
+                <SelectTrigger className="h-8 text-xs w-full">
                   <SelectValue placeholder="Any due date" />
                 </SelectTrigger>
                 <SelectContent>
@@ -400,20 +424,6 @@ export function TaskListView({ initialTasks, users }: TaskListViewProps) {
               </Select>
             </div>
           </div>
-
-          {activeFilterCount > 0 && (
-            <div className="flex justify-end">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 gap-1.5 text-xs text-muted-foreground"
-                onClick={clearFilters}
-              >
-                <X className="h-3.5 w-3.5" />
-                Clear all filters
-              </Button>
-            </div>
-          )}
         </div>
       )}
 
@@ -587,12 +597,22 @@ export function TaskListView({ initialTasks, users }: TaskListViewProps) {
                       )}
                     </div>
                     <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                      {assignee && (
-                        <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-                          <span className="h-4 w-4 rounded-full bg-primary/20 text-primary text-[9px] font-bold inline-flex items-center justify-center shrink-0">
-                            {assignee.full_name?.charAt(0).toUpperCase()}
+                      {assignee ? (
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-6 w-6">
+                            <AvatarImage src={assignee.avatar_url || ""} />
+                            <AvatarFallback className="rounded-full bg-primary/20 text-primary text-[9px] font-bold inline-flex items-center justify-center shrink-0">
+                              {assignee.full_name?.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+
+                          <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                            {assignee.full_name}
                           </span>
-                          {assignee.full_name}
+                        </div>
+                      ) : (
+                        <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                          Unassigned
                         </span>
                       )}
                       {task.tags?.slice(0, 2).map((tag) => (
