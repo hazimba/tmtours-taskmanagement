@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { TaskComments } from "@/components/task-comments";
 import { TaskCard } from "@/components/task-card";
 import { TaskAttachmentModal } from "@/components/task-attachment-modal";
+import { DeleteTaskButton } from "@/components/delete-task-button";
 import {
   ArrowLeft,
   CalendarDays,
@@ -25,6 +26,7 @@ import {
   GitBranch,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const priorityConfig: Record<
   TaskPriority,
@@ -200,8 +202,10 @@ export default async function TaskDetailPage({
   const parentTask = parentTaskRes.data as Task | null;
   const subtasks = (subtasksRes.data ?? []) as Task[];
 
+  console.log("createdByUser", createdByUser);
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-1">
       <Card className="scrollbar-hide overflow-y-auto p-4">
         <div className="space-y-5">
           <div className="flex pb-8 items-center justify-between gap-4">
@@ -212,17 +216,17 @@ export default async function TaskDetailPage({
               </Button>
             </Link>
             {isOwner && (
-              <div>
+              <div className="flex items-center gap-2">
                 <Link href={`/task/${id}/edit`}>
                   <Button size="sm" variant="outline">
                     Edit Task
                   </Button>
                 </Link>
-                <Button>
-                  <Button size="sm" variant="outline">
-                    Delete Task
-                  </Button>
-                </Button>
+
+                <DeleteTaskButton
+                  task={typedTask}
+                  subtaskCount={subtasks.length}
+                />
               </div>
             )}
           </div>
@@ -293,9 +297,13 @@ export default async function TaskDetailPage({
             <MetaRow icon={<User2 className="h-4 w-4" />} label="Assigned To">
               {assignedUser ? (
                 <div className="flex items-center gap-2">
-                  <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary">
-                    {assignedUser.full_name?.charAt(0).toUpperCase()}
-                  </div>
+                  <Avatar className="h-6 w-6">
+                    <AvatarImage src={assignedUser.avatar_url || ""} />
+                    <AvatarFallback className="text-[12px] font-bold">
+                      {assignedUser.full_name?.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+
                   <span>{assignedUser.full_name}</span>
                 </div>
               ) : (
@@ -306,9 +314,13 @@ export default async function TaskDetailPage({
             <MetaRow icon={<User2 className="h-4 w-4" />} label="Created By">
               {createdByUser ? (
                 <div className="flex items-center gap-2">
-                  <div className="h-6 w-6 rounded-full bg-secondary flex items-center justify-center text-[10px] font-bold">
-                    {createdByUser.full_name?.charAt(0).toUpperCase()}
-                  </div>
+                  <Avatar className="h-6 w-6">
+                    <AvatarImage src={createdByUser.avatar_url || ""} />
+                    <AvatarFallback className="text-[12px] font-bold bg-primary/50 text-white">
+                      {createdByUser.full_name?.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+
                   <span>{createdByUser.full_name}</span>
                 </div>
               ) : (

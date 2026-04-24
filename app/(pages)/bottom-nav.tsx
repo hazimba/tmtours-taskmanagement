@@ -1,22 +1,26 @@
 "use client";
 
-import { Bell, Home, User } from "lucide-react";
+import { Bell, Home, User, List } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const items = [
   { href: "/home", label: "Home", icon: Home },
-  { href: "/task", label: "Task", icon: Bell },
+  { href: "/task/list", label: "List", icon: List },
+  { href: "/task", label: "Board", icon: Bell },
   { href: "/profile", label: "Profile", icon: User },
-  // { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 const BottomNav = () => {
   const pathname = usePathname();
   const active =
-    items.find((item) => pathname.startsWith(item.href))?.href ?? items[0].href;
+    items.find((item) =>
+      item.href === "/task"
+        ? pathname === "/task" ||
+          (pathname.startsWith("/task/") && !pathname.startsWith("/task/list"))
+        : pathname === item.href || pathname.startsWith(item.href + "/")
+    )?.href ?? items[0].href;
 
   return (
     <Tabs

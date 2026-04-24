@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { taskSchema, type TaskFormData } from "@/lib/validations/task";
 import { Task, TaskPriority, TaskStatus, User } from "@/types";
 import { supabase } from "@/lib/supabaseClient";
@@ -17,9 +17,7 @@ import { Card } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -38,10 +36,27 @@ interface TaskFormProps {
 export function TaskForm({ task }: TaskFormProps) {
   const isEdit = !!task;
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [users, setUsers] = useState<User[]>([]);
   const [allTasks, setAllTasks] = useState<Task[]>([]);
   const [tagInput, setTagInput] = useState("");
+
+  // Build default values — merged with ?from_copy query params if present
+  const copyTitle = searchParams.get("title") ?? undefined;
+  const copyDefaults = copyTitle
+    ? {
+        title: copyTitle,
+        description: searchParams.get("description") ?? "",
+        priority:
+          (searchParams.get("priority") as TaskPriority) ?? TaskPriority.MEDIUM,
+        category: searchParams.get("category") ?? "",
+        start_date: searchParams.get("start_date") ?? "",
+        due_date: searchParams.get("due_date") ?? "",
+        tags: searchParams.get("tags")?.split(",").filter(Boolean) ?? [],
+        status: TaskStatus.TODO,
+      }
+    : null;
 
   const {
     register,
@@ -65,6 +80,10 @@ export function TaskForm({ task }: TaskFormProps) {
           parent_id: task.parent_id ?? "",
           start_date: task.start_date ?? "",
           due_date: task.due_date ?? "",
+        }
+      : copyDefaults
+      ? {
+          ...copyDefaults,
         }
       : {
           status: TaskStatus.TODO,
@@ -140,7 +159,10 @@ export function TaskForm({ task }: TaskFormProps) {
           .update({
             ...data,
             updated_at: new Date().toISOString(),
+            assigned_to: data.assigned_to || null,
             parent_id: data.parent_id || null,
+            start_date: data.start_date || null,
+            due_date: data.due_date || null,
           })
           .eq("id", task!.id);
         if (error) throw error;
@@ -151,6 +173,7 @@ export function TaskForm({ task }: TaskFormProps) {
           {
             id: uuidv4(),
             parent_id: data.parent_id || null,
+            assigned_to: data.assigned_to || null,
             created_by: user.id,
             is_archived: false,
             ...data,

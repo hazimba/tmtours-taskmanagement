@@ -12,7 +12,15 @@ import { User } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loader2, Send, MessageSquare, Trash2 } from "lucide-react";
+import {
+  Loader2,
+  Send,
+  MessageSquare,
+  Trash2,
+  Pencil,
+  Check,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -61,6 +69,9 @@ interface TaskCommentsProps {
 export function TaskComments({ taskId, currentUserId }: TaskCommentsProps) {
   const [comments, setComments] = useState<TaskComment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -180,6 +191,39 @@ export function TaskComments({ taskId, currentUserId }: TaskCommentsProps) {
     else await refetchComments();
   }
 
+  // ── edit comment ───────────────────────────────────────────────────────────
+
+  function startEdit(comment: TaskComment) {
+    setEditingId(comment.id);
+    setEditContent(comment.content);
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setEditContent("");
+  }
+
+  async function saveEdit(id: string) {
+    if (!editContent.trim()) return;
+    setSavingEdit(true);
+    const { error } = await supabase
+      .from("task_comments")
+      .update({
+        content: editContent.trim(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .eq("user_id", currentUserId);
+    setSavingEdit(false);
+    if (error) {
+      toast.error("Failed to update comment.");
+    } else {
+      setEditingId(null);
+      setEditContent("");
+      await refetchComments();
+    }
+  }
+
   // ── render ─────────────────────────────────────────────────────────────────
 
   return (
@@ -206,11 +250,13 @@ export function TaskComments({ taskId, currentUserId }: TaskCommentsProps) {
           {comments.map((comment) => {
             const isOwn = comment.user_id === currentUserId;
             const name = comment.user?.full_name ?? "Unknown";
+            const isEditing = editingId === comment.id;
+            const wasEdited = comment.updated_at !== comment.created_at;
             return (
               <div key={comment.id} className="flex gap-3 group">
                 <Avatar className="h-8 w-8 shrink-0 mt-0.5">
                   <AvatarImage src={comment.user?.avatar_url ?? undefined} />
-                  <AvatarFallback className="text-xs">
+                  <AvatarFallback className="text-xs bg-primary/10 text-primary font-semibold">
                     {initials(name)}
                   </AvatarFallback>
                 </Avatar>
@@ -220,25 +266,85 @@ export function TaskComments({ taskId, currentUserId }: TaskCommentsProps) {
                     <span className="text-xs text-muted-foreground">
                       {timeAgo(comment.created_at)}
                     </span>
-                  </div>
-                  <div
-                    className={cn(
-                      "mt-1 text-sm rounded-xl px-3 py-2 leading-relaxed whitespace-pre-wrap",
-                      isOwn
-                        ? "bg-primary/10 text-foreground"
-                        : "bg-muted text-foreground"
+                    {wasEdited && (
+                      <span className="text-[10px] text-muted-foreground/60 italic">
+                        edited
+                      </span>
                     )}
-                  >
-                    {comment.content}
                   </div>
+
+                  {isEditing ? (
+                    <div className="mt-1 space-y-2">
+                      <Textarea
+                        value={editContent}
+                        onChange={(e) => setEditContent(e.target.value)}
+                        rows={2}
+                        className="resize-none text-sm"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                            e.preventDefault();
+                            saveEdit(comment.id);
+                          }
+                          if (e.key === "Escape") cancelEdit();
+                        }}
+                        autoFocus
+                      />
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          className="h-7 px-3 gap-1.5 text-xs"
+                          onClick={() => saveEdit(comment.id)}
+                          disabled={savingEdit || !editContent.trim()}
+                        >
+                          {savingEdit ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <Check className="h-3 w-3" />
+                          )}
+                          Save
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 px-3 gap-1.5 text-xs"
+                          onClick={cancelEdit}
+                        >
+                          <X className="h-3 w-3" />
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      className={cn(
+                        "mt-1 text-sm rounded-xl px-3 py-2 leading-relaxed whitespace-pre-wrap",
+                        isOwn
+                          ? "bg-primary/10 text-foreground"
+                          : "bg-muted text-foreground"
+                      )}
+                    >
+                      {comment.content}
+                    </div>
+                  )}
                 </div>
-                {isOwn && (
-                  <button
-                    onClick={() => deleteComment(comment.id)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity self-start mt-1 text-muted-foreground hover:text-destructive"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
+
+                {isOwn && !isEditing && (
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity self-start mt-1 flex items-center gap-1">
+                    <button
+                      onClick={() => startEdit(comment)}
+                      className="text-muted-foreground hover:text-primary transition-colors p-0.5"
+                      title="Edit comment"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      onClick={() => deleteComment(comment.id)}
+                      className="text-muted-foreground hover:text-destructive transition-colors p-0.5"
+                      title="Delete comment"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                 )}
               </div>
             );
