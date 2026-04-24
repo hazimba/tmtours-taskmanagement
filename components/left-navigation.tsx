@@ -12,7 +12,7 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Card } from "./ui/card";
+import { SidebarPanel } from "./sidebar-panel";
 
 interface LeftNavigationProps {
   children: React.ReactNode;
@@ -108,15 +108,8 @@ const LeftNavigation = ({ children }: LeftNavigationProps) => {
           <div className="md:w-8/10 w-full pb-20 md:px-1 scrollbar-hide overflow-y-auto">
             {children}
           </div>
-          <div className="w-2/10 hidden lg:block p-1">
-            <Card>
-              <div className="p-4">
-                <h2 className="text-lg font-semibold">Extra Info</h2>
-                <p className="text-sm text-muted-foreground">
-                  Something to put here
-                </p>
-              </div>
-            </Card>
+          <div className="w-2/10 hidden lg:block p-1 overflow-y-auto scrollbar-hide">
+            <SidebarPanel />
           </div>
         </main>
       </div>
