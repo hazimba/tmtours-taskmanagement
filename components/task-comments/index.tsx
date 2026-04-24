@@ -1,0 +1,156 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { taskCommentSchema, type TaskCommentFormData } from "@/lib/validations/task";
+import { supabase } from "@/lib/supabaseClient";
+import { User } from "@/types";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Loader2, Send, MessageSquare } from "lucide-react";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import { CommentItem } from "./comment-item";
+
+// ─── types ────────────────────────────────────────────────────────────────────
+
+export interface TaskComment {
+  id: string;
+  task_id: string;
+  user_id: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+  user?: Pick<User, "id" | "full_name" | "avatar_url">;
+}
+
+// ─── component ────────────────────────────────────────────────────────────────
+
+interface TaskCommentsProps {
+  taskId: string;
+  currentUserId: string;
+}
+
+export function TaskComments({ taskId, currentUserId }: TaskCommentsProps) {
+  const [comments, setComments] = useState<TaskComment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<TaskCommentFormData>({
+    resolver: zodResolver(taskCommentSchema),
+    defaultValues: { content: "" },
+  });
+
+  const SELECT_QUERY = `id, task_id, user_id, content, created_at, updated_at, user:profiles(id, full_name, avatar_url)`;
+
+  async function refetchComments() {
+    const { data, error } = await supabase.from("task_comments").select(SELECT_QUERY).eq("task_id", taskId).order("created_at", { ascending: true });
+    if (!error && data) setComments(data as unknown as TaskComment[]);
+  }
+
+  useEffect(() => {
+    async function fetchComments() {
+      const { data, error } = await supabase.from("task_comments").select(SELECT_QUERY).eq("task_id", taskId).order("created_at", { ascending: true });
+      if (!error && data) setComments(data as unknown as TaskComment[]);
+      setLoading(false);
+    }
+    fetchComments();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [taskId]);
+
+  useEffect(() => {
+    const channel = supabase
+      .channel(`task-comments-${taskId}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "task_comments", filter: `task_id=eq.${taskId}` }, async (payload) => {
+        if (payload.eventType === "INSERT") {
+          const { data } = await supabase.from("task_comments").select(SELECT_QUERY).eq("id", payload.new.id).single();
+          if (data) setComments((prev) => [...prev, data as unknown as TaskComment]);
+        }
+        if (payload.eventType === "DELETE") {
+          setComments((prev) => prev.filter((c) => c.id !== payload.old.id));
+        }
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [taskId]);
+
+  const onSubmit = async (data: TaskCommentFormData) => {
+    const { error } = await supabase.from("task_comments").insert([{ task_id: taskId, user_id: currentUserId, content: data.content.trim() }]);
+    if (error) toast.error("Failed to post comment.");
+    else { reset(); await refetchComments(); }
+  };
+
+  async function deleteComment(id: string) {
+    const { error } = await supabase.from("task_comments").delete().eq("id", id).eq("user_id", currentUserId);
+    if (error) toast.error("Failed to delete comment.");
+    else await refetchComments();
+  }
+
+  function startEdit(comment: TaskComment) { setEditingId(comment.id); setEditContent(comment.content); }
+  function cancelEdit() { setEditingId(null); setEditContent(""); }
+
+  async function saveEdit(id: string) {
+    if (!editContent.trim()) return;
+    setSavingEdit(true);
+    const { error } = await supabase.from("task_comments").update({ content: editContent.trim(), updated_at: new Date().toISOString() }).eq("id", id).eq("user_id", currentUserId);
+    setSavingEdit(false);
+    if (error) { toast.error("Failed to update comment."); }
+    else { setEditingId(null); setEditContent(""); await refetchComments(); }
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2 text-muted-foreground">
+        <MessageSquare className="h-4 w-4" />
+        <span className="text-xs font-semibold uppercase tracking-wider">
+          Comments{comments.length > 0 ? ` (${comments.length})` : ""}
+        </span>
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+      ) : comments.length === 0 ? (
+        <p className="text-sm text-muted-foreground text-center py-6">No comments yet. Be the first to comment!</p>
+      ) : (
+        <div className="space-y-4 max-h-[480px] overflow-y-auto pr-1">
+          {comments.map((comment) => (
+            <CommentItem
+              key={comment.id}
+              comment={comment}
+              currentUserId={currentUserId}
+              isEditing={editingId === comment.id}
+              editContent={editContent}
+              savingEdit={savingEdit}
+              onEditContentChange={setEditContent}
+              onStartEdit={startEdit}
+              onCancelEdit={cancelEdit}
+              onSaveEdit={saveEdit}
+              onDelete={deleteComment}
+            />
+          ))}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit(onSubmit)} className="flex gap-2 items-end pt-2 border-t border-border">
+        <div className="flex-1 space-y-1">
+          <Textarea
+            {...register("content")}
+            placeholder="Write a comment…"
+            rows={2}
+            className={cn("resize-none text-base", errors.content && "border-red-500")}
+            onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); handleSubmit(onSubmit)(); } }}
+          />
+          {errors.content && <p className="text-xs text-red-500">{errors.content.message}</p>}
+          <p className="text-[11px] text-muted-foreground">⌘ + Enter to send</p>
+        </div>
+        <Button type="submit" size="icon" disabled={isSubmitting} className="shrink-0 mb-5">
+          {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+        </Button>
+      </form>
+    </div>
+  );
+}
