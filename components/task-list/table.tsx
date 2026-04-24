@@ -33,7 +33,12 @@ import {
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export type SortField = "created_at" | "due_date" | "priority" | "title" | "status";
+export type SortField =
+  | "created_at"
+  | "due_date"
+  | "priority"
+  | "title"
+  | "status";
 export type SortDir = "asc" | "desc";
 
 export function SortIcon({
@@ -107,8 +112,13 @@ export function TaskTable({
 
       {/* Mobile header */}
       <div className="sm:hidden flex items-center justify-between bg-muted/50 border-b border-border px-4 py-2">
-        <span className="text-xs font-semibold text-muted-foreground">{allCount} tasks</span>
-        <Select value={sortField} onValueChange={(v) => onSetSortField(v as SortField)}>
+        <span className="text-xs font-semibold text-muted-foreground">
+          {allCount} tasks
+        </span>
+        <Select
+          value={sortField}
+          onValueChange={(v) => onSetSortField(v as SortField)}
+        >
           <SelectTrigger className="h-7 w-auto text-xs border-0 bg-transparent gap-1 pr-0 focus:ring-0">
             <SelectValue />
           </SelectTrigger>
@@ -126,9 +136,16 @@ export function TaskTable({
       {tasks.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center gap-2">
           <Search className="h-8 w-8 text-muted-foreground/30" />
-          <p className="text-sm font-medium text-muted-foreground">No tasks match your filters</p>
+          <p className="text-sm font-medium text-muted-foreground">
+            No tasks match your filters
+          </p>
           {(activeFilterCount > 0 || search) && (
-            <Button variant="ghost" size="sm" onClick={onClearFilters} className="text-xs gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClearFilters}
+              className="text-xs gap-1"
+            >
               <X className="h-3.5 w-3.5" /> Clear filters
             </Button>
           )}
@@ -166,7 +183,8 @@ export function TaskTable({
                     <span
                       className={cn(
                         "text-sm font-medium leading-snug line-clamp-1 group-hover:text-primary transition-colors",
-                        task.status === TaskStatus.COMPLETED && "line-through text-muted-foreground group-hover:text-muted-foreground"
+                        task.status === TaskStatus.COMPLETED &&
+                          "line-through text-muted-foreground group-hover:text-muted-foreground"
                       )}
                     >
                       {task.title}
@@ -177,7 +195,9 @@ export function TaskTable({
                       </span>
                     )}
                     {dueSoon && (
-                      <span className="shrink-0 text-[10px] font-semibold text-amber-500">Due soon</span>
+                      <span className="shrink-0 text-[10px] font-semibold text-amber-500">
+                        Due soon
+                      </span>
                     )}
                   </div>
                   <div className="flex items-center gap-2 mt-0.5 flex-wrap">
@@ -189,19 +209,27 @@ export function TaskTable({
                             {assignee.full_name?.charAt(0).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
-                        <span className="text-[11px] text-muted-foreground">{assignee.full_name}</span>
+                        <span className="text-[11px] text-muted-foreground">
+                          {assignee.full_name}
+                        </span>
                       </div>
                     ) : (
-                      <span className="text-[11px] text-muted-foreground">Unassigned</span>
+                      <span className="text-[11px] text-muted-foreground">
+                        Unassigned
+                      </span>
                     )}
                     {task.tags?.slice(0, 2).map((tag) => (
-                      <Badge key={tag} className="text-[10px] bg-accent text-accent-foreground px-2 rounded-sm py-0.5 font-medium">
+                      <Badge
+                        key={tag}
+                        className="text-[10px] bg-accent text-accent-foreground px-2 rounded-sm py-0.5 font-medium"
+                      >
                         {tag}
                       </Badge>
                     ))}
                     {(task.attachments?.length ?? 0) > 0 && (
                       <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                        <Paperclip className="h-2.5 w-2.5" />{task.attachments.length}
+                        <Paperclip className="h-2.5 w-2.5" />
+                        {task.attachments.length}
                       </span>
                     )}
                   </div>
@@ -209,14 +237,25 @@ export function TaskTable({
 
                 {/* Status — desktop */}
                 <div className="hidden sm:flex items-center">
-                  <span className={cn("flex items-center gap-1.5 text-xs font-medium whitespace-nowrap", statusMeta.color)}>
-                    {statusMeta.icon}{statusMeta.label}
+                  <span
+                    className={cn(
+                      "flex items-center gap-1.5 text-xs font-medium whitespace-nowrap",
+                      statusMeta.color
+                    )}
+                  >
+                    {statusMeta.icon}
+                    {statusMeta.label}
                   </span>
                 </div>
 
                 {/* Priority — desktop */}
                 <div className="hidden sm:flex items-center">
-                  <Badge className={cn("text-xs font-semibold px-2 py-0.5 rounded-sm whitespace-nowrap", priorityMeta.className)}>
+                  <Badge
+                    className={cn(
+                      "text-xs font-semibold px-2 py-0.5 rounded-sm whitespace-nowrap",
+                      priorityMeta.className
+                    )}
+                  >
                     {priorityMeta.label}
                   </Badge>
                 </div>
@@ -224,11 +263,18 @@ export function TaskTable({
                 {/* Due date — desktop */}
                 <div className="hidden sm:flex items-center">
                   {task.due_date ? (
-                    <span className={cn(
-                      "flex items-center gap-1 text-xs font-medium whitespace-nowrap",
-                      overdue ? "text-red-500" : dueSoon ? "text-amber-500" : "text-muted-foreground"
-                    )}>
-                      <CalendarDays className="h-3 w-3" />{formatDate(task.due_date)}
+                    <span
+                      className={cn(
+                        "flex items-center gap-1 text-xs font-medium whitespace-nowrap",
+                        overdue
+                          ? "text-red-500"
+                          : dueSoon
+                          ? "text-amber-500"
+                          : "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarDays className="h-3 w-3" />
+                      {formatDate(task.due_date)}
                     </span>
                   ) : (
                     <span className="text-xs text-muted-foreground/40">—</span>
@@ -237,15 +283,26 @@ export function TaskTable({
 
                 {/* Created at — desktop */}
                 <div className="hidden sm:flex items-center">
-                  <span className="text-xs text-muted-foreground whitespace-nowrap">{formatDate(task.created_at)}</span>
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">
+                    {formatDate(task.created_at)}
+                  </span>
                 </div>
 
                 {/* Mobile: status icon */}
-                <span className={cn("flex sm:hidden items-center shrink-0", statusMeta.color)}>{statusMeta.icon}</span>
+                <span
+                  className={cn(
+                    "flex sm:hidden items-center shrink-0",
+                    statusMeta.color
+                  )}
+                >
+                  {statusMeta.icon}
+                </span>
 
                 {/* Loading spinner */}
                 <div className="flex items-center justify-end">
-                  {isLoading && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
+                  {isLoading && (
+                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  )}
                 </div>
               </div>
             );

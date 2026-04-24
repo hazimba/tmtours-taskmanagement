@@ -5,7 +5,11 @@ import Link from "next/link";
 import { Task, TaskPriority, TaskStatus, User } from "@/types";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { isOverdue, isDueSoonWithinWeek, PRIORITY_ORDER } from "@/components/shared/task-meta";
+import {
+  isOverdue,
+  isDueSoonWithinWeek,
+  PRIORITY_ORDER,
+} from "@/components/shared/task-meta";
 import { TaskFilters } from "./filters";
 import { TaskTable, SortField, SortDir } from "./table";
 import { Pagination } from "./pagination";
@@ -18,11 +22,17 @@ interface TaskListViewProps {
   currentUser?: User | null;
 }
 
-export function TaskListView({ initialTasks, users, currentUser }: TaskListViewProps) {
+export function TaskListView({
+  initialTasks,
+  users,
+  currentUser,
+}: TaskListViewProps) {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterPriority, setFilterPriority] = useState("all");
-  const [filterAssignee, setFilterAssignee] = useState(currentUser ? currentUser.id : "all");
+  const [filterAssignee, setFilterAssignee] = useState(
+    currentUser ? currentUser.id : "all"
+  );
   const [filterDue, setFilterDue] = useState("all");
   const [filterParentOnly, setFilterParentOnly] = useState(false);
   const [filterHasSubtasks, setFilterHasSubtasks] = useState(false);
@@ -32,11 +42,16 @@ export function TaskListView({ initialTasks, users, currentUser }: TaskListViewP
 
   function toggleSort(field: SortField) {
     if (sortField === field) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    else { setSortField(field); setSortDir("desc"); }
+    else {
+      setSortField(field);
+      setSortDir("desc");
+    }
   }
 
   const filtered = useMemo(() => {
-    const parentIds = new Set(initialTasks.map((t) => t.parent_id).filter(Boolean));
+    const parentIds = new Set(
+      initialTasks.map((t) => t.parent_id).filter(Boolean)
+    );
     let list = [...initialTasks];
 
     if (search.trim()) {
@@ -48,15 +63,29 @@ export function TaskListView({ initialTasks, users, currentUser }: TaskListViewP
           t.tags?.some((tag) => tag.toLowerCase().includes(q))
       );
     }
-    if (filterStatus !== "all") list = list.filter((t) => t.status === filterStatus);
-    if (filterPriority !== "all") list = list.filter((t) => t.priority === filterPriority);
-    if (filterAssignee === "unassigned") list = list.filter((t) => !t.assigned_to);
-    else if (filterAssignee !== "all") list = list.filter((t) => t.assigned_to === filterAssignee);
+    if (filterStatus !== "all")
+      list = list.filter((t) => t.status === filterStatus);
+    if (filterPriority !== "all")
+      list = list.filter((t) => t.priority === filterPriority);
+    if (filterAssignee === "unassigned")
+      list = list.filter((t) => !t.assigned_to);
+    else if (filterAssignee !== "all")
+      list = list.filter((t) => t.assigned_to === filterAssignee);
 
     if (filterDue === "overdue") {
-      list = list.filter((t) => isOverdue(t.due_date) && t.status !== TaskStatus.COMPLETED && t.status !== TaskStatus.CANCELLED);
+      list = list.filter(
+        (t) =>
+          isOverdue(t.due_date) &&
+          t.status !== TaskStatus.COMPLETED &&
+          t.status !== TaskStatus.CANCELLED
+      );
     } else if (filterDue === "this_week") {
-      list = list.filter((t) => isDueSoonWithinWeek(t.due_date) && t.status !== TaskStatus.COMPLETED && t.status !== TaskStatus.CANCELLED);
+      list = list.filter(
+        (t) =>
+          isDueSoonWithinWeek(t.due_date) &&
+          t.status !== TaskStatus.COMPLETED &&
+          t.status !== TaskStatus.CANCELLED
+      );
     } else if (filterDue === "no_date") {
       list = list.filter((t) => !t.due_date);
     }
@@ -67,16 +96,40 @@ export function TaskListView({ initialTasks, users, currentUser }: TaskListViewP
     list.sort((a, b) => {
       let cmp = 0;
       switch (sortField) {
-        case "created_at": cmp = new Date(a.created_at).getTime() - new Date(b.created_at).getTime(); break;
-        case "due_date": cmp = (a.due_date ? new Date(a.due_date).getTime() : Infinity) - (b.due_date ? new Date(b.due_date).getTime() : Infinity); break;
-        case "priority": cmp = PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority]; break;
-        case "title": cmp = a.title.localeCompare(b.title); break;
-        case "status": cmp = a.status.localeCompare(b.status); break;
+        case "created_at":
+          cmp =
+            new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+          break;
+        case "due_date":
+          cmp =
+            (a.due_date ? new Date(a.due_date).getTime() : Infinity) -
+            (b.due_date ? new Date(b.due_date).getTime() : Infinity);
+          break;
+        case "priority":
+          cmp = PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
+          break;
+        case "title":
+          cmp = a.title.localeCompare(b.title);
+          break;
+        case "status":
+          cmp = a.status.localeCompare(b.status);
+          break;
       }
       return sortDir === "asc" ? cmp : -cmp;
     });
     return list;
-  }, [initialTasks, search, filterStatus, filterPriority, filterAssignee, filterDue, filterParentOnly, filterHasSubtasks, sortField, sortDir]);
+  }, [
+    initialTasks,
+    search,
+    filterStatus,
+    filterPriority,
+    filterAssignee,
+    filterDue,
+    filterParentOnly,
+    filterHasSubtasks,
+    sortField,
+    sortDir,
+  ]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -90,9 +143,14 @@ export function TaskListView({ initialTasks, users, currentUser }: TaskListViewP
   ].filter(Boolean).length;
 
   function clearFilters() {
-    setFilterStatus("all"); setFilterPriority("all"); setFilterAssignee("all");
-    setFilterDue("all"); setFilterParentOnly(false); setFilterHasSubtasks(false);
-    setSearch(""); setPage(1);
+    setFilterStatus("all");
+    setFilterPriority("all");
+    setFilterAssignee("all");
+    setFilterDue("all");
+    setFilterParentOnly(false);
+    setFilterHasSubtasks(false);
+    setSearch("");
+    setPage(1);
   }
 
   return (
@@ -116,19 +174,40 @@ export function TaskListView({ initialTasks, users, currentUser }: TaskListViewP
       {/* Filters */}
       <TaskFilters
         search={search}
-        onSearchChange={(v) => { setSearch(v); setPage(1); }}
+        onSearchChange={(v) => {
+          setSearch(v);
+          setPage(1);
+        }}
         filterStatus={filterStatus}
-        onFilterStatus={(v) => { setFilterStatus(v); setPage(1); }}
+        onFilterStatus={(v) => {
+          setFilterStatus(v);
+          setPage(1);
+        }}
         filterPriority={filterPriority}
-        onFilterPriority={(v) => { setFilterPriority(v); setPage(1); }}
+        onFilterPriority={(v) => {
+          setFilterPriority(v);
+          setPage(1);
+        }}
         filterAssignee={filterAssignee}
-        onFilterAssignee={(v) => { setFilterAssignee(v); setPage(1); }}
+        onFilterAssignee={(v) => {
+          setFilterAssignee(v);
+          setPage(1);
+        }}
         filterDue={filterDue}
-        onFilterDue={(v) => { setFilterDue(v); setPage(1); }}
+        onFilterDue={(v) => {
+          setFilterDue(v);
+          setPage(1);
+        }}
         filterParentOnly={filterParentOnly}
-        onFilterParentOnly={(v) => { setFilterParentOnly(v); setPage(1); }}
+        onFilterParentOnly={(v) => {
+          setFilterParentOnly(v);
+          setPage(1);
+        }}
         filterHasSubtasks={filterHasSubtasks}
-        onFilterHasSubtasks={(v) => { setFilterHasSubtasks(v); setPage(1); }}
+        onFilterHasSubtasks={(v) => {
+          setFilterHasSubtasks(v);
+          setPage(1);
+        }}
         users={users}
         activeFilterCount={activeFilterCount}
         onClearFilters={clearFilters}

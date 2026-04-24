@@ -49,7 +49,8 @@ export function TaskBoard({ initialTasks }: TaskBoardProps) {
   }, {} as Record<TaskStatus, Task[]>);
 
   const totalActive = tasks.filter(
-    (t) => t.status !== TaskStatus.COMPLETED && t.status !== TaskStatus.CANCELLED
+    (t) =>
+      t.status !== TaskStatus.COMPLETED && t.status !== TaskStatus.CANCELLED
   ).length;
 
   function findStatus(taskId: string): TaskStatus | null {
@@ -65,10 +66,16 @@ export function TaskBoard({ initialTasks }: TaskBoardProps) {
   }
 
   function onDragOver({ over }: DragOverEvent) {
-    if (!over) { setOverStatus(null); return; }
+    if (!over) {
+      setOverStatus(null);
+      return;
+    }
     const overId = over.id as string;
     const statusMatch = STATUS_ORDER.find((s) => s === overId);
-    if (statusMatch) { setOverStatus(statusMatch); return; }
+    if (statusMatch) {
+      setOverStatus(statusMatch);
+      return;
+    }
     setOverStatus(findStatus(overId));
   }
 
@@ -79,7 +86,8 @@ export function TaskBoard({ initialTasks }: TaskBoardProps) {
 
     const activeId = active.id as string;
     const overId = over.id as string;
-    const targetStatus = STATUS_ORDER.find((s) => s === overId) ?? findStatus(overId);
+    const targetStatus =
+      STATUS_ORDER.find((s) => s === overId) ?? findStatus(overId);
     if (!targetStatus) return;
 
     const sourceStatus = findStatus(activeId);
@@ -97,10 +105,14 @@ export function TaskBoard({ initialTasks }: TaskBoardProps) {
     if (error) {
       toast.error("Failed to update task status.");
       setTasks((prev) =>
-        prev.map((t) => (t.id === activeId ? { ...t, status: sourceStatus } : t))
+        prev.map((t) =>
+          t.id === activeId ? { ...t, status: sourceStatus } : t
+        )
       );
     } else {
-      toast.success(`Moved to "${STATUS_META[targetStatus].label}"`, { duration: 2000 });
+      toast.success(`Moved to "${STATUS_META[targetStatus].label}"`, {
+        duration: 2000,
+      });
     }
   }
 
@@ -112,10 +124,15 @@ export function TaskBoard({ initialTasks }: TaskBoardProps) {
         </div>
         <div>
           <p className="font-semibold text-base">No tasks yet</p>
-          <p className="text-sm text-muted-foreground mt-1">Create your first task to get started</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Create your first task to get started
+          </p>
         </div>
         <Link href="/task/create">
-          <Button className="gap-2 mt-2"><Plus className="h-4 w-4" />Add New Task</Button>
+          <Button className="gap-2 mt-2">
+            <Plus className="h-4 w-4" />
+            Add New Task
+          </Button>
         </Link>
       </div>
     );
@@ -127,7 +144,8 @@ export function TaskBoard({ initialTasks }: TaskBoardProps) {
         <div>
           <h1 className="text-xl font-bold tracking-widest">TASK BOARD</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {totalActive} active task{totalActive !== 1 ? "s" : ""} · drag cards to change status
+            {totalActive} active task{totalActive !== 1 ? "s" : ""} · drag cards
+            to change status
           </p>
         </div>
         <Link href="/task/create">

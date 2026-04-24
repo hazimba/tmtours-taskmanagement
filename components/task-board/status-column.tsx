@@ -1,7 +1,10 @@
 "use client";
 
 import { useDroppable } from "@dnd-kit/core";
-import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { Task, TaskStatus } from "@/types";
 import { STATUS_META } from "@/components/shared/task-meta";
 import { SortableTaskCard } from "./sortable-card";

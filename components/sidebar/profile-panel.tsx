@@ -25,17 +25,31 @@ export function ProfilePanel({ profile }: { profile: User | null }) {
   return (
     <Card>
       <CardHeader className="pb-1 pt-4 px-4">
-        <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Profile Completeness</CardTitle>
+        <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Profile Completeness
+        </CardTitle>
       </CardHeader>
       <CardContent className="px-4 pb-4 space-y-3">
         <div className="space-y-1">
           <div className="flex justify-between text-xs">
-            <span className="text-muted-foreground">{filled.length}/{fields.length} fields</span>
-            <span className={cn("font-semibold", pct === 100 ? "text-emerald-500" : "text-amber-500")}>{pct}%</span>
+            <span className="text-muted-foreground">
+              {filled.length}/{fields.length} fields
+            </span>
+            <span
+              className={cn(
+                "font-semibold",
+                pct === 100 ? "text-emerald-500" : "text-amber-500"
+              )}
+            >
+              {pct}%
+            </span>
           </div>
           <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
             <div
-              className={cn("h-full rounded-full transition-all", pct === 100 ? "bg-emerald-500" : "bg-amber-400")}
+              className={cn(
+                "h-full rounded-full transition-all",
+                pct === 100 ? "bg-emerald-500" : "bg-amber-400"
+              )}
               style={{ width: `${pct}%` }}
             />
           </div>
@@ -47,7 +61,10 @@ export function ProfilePanel({ profile }: { profile: User | null }) {
               <AlertTriangle className="h-3 w-3" /> Missing
             </p>
             {missing.map((f) => (
-              <div key={f.label} className="flex items-center gap-2 text-[11px] text-muted-foreground">
+              <div
+                key={f.label}
+                className="flex items-center gap-2 text-[11px] text-muted-foreground"
+              >
                 <span className="h-1.5 w-1.5 rounded-full bg-amber-400 shrink-0" />
                 {f.label}
               </div>
@@ -60,7 +77,9 @@ export function ProfilePanel({ profile }: { profile: User | null }) {
         )}
 
         <div className="space-y-1.5 border-t border-border pt-2">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Completed</p>
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Completed
+          </p>
           {filled.map((f) => (
             <div key={f.label} className="flex items-center gap-2 text-[11px]">
               <CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0" />
