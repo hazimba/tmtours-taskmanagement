@@ -201,223 +201,221 @@ export default async function TaskDetailPage({
   const subtasks = (subtasksRes.data ?? []) as Task[];
 
   return (
-    <div className="max-w-3xl mx-auto">
-      {/* Top Bar */}
-      <div className="sticky top-8 z-10 border-border bg-background border border-border rounded-lg shadow-sm">
-        <div className="max-w-3xl px-4 py-3 flex items-center justify-between gap-4">
-          <Link href="/task">
-            <Button variant="ghost" size="sm" className="gap-1.5 -ml-2">
-              <ArrowLeft className="h-4 w-4" />
-              <span className="">Tasks</span>
-            </Button>
-          </Link>
-          {isOwner && (
-            <Link href={`/task/${id}/edit`}>
-              <Button size="sm" variant="outline">
-                Edit Task
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <Card className="scrollbar-hide overflow-y-auto p-4">
+        <div className="space-y-5">
+          <div className="flex pb-8 items-center justify-between gap-4">
+            <Link href="/task">
+              <Button variant="ghost" size="sm" className="gap-1.5 -ml-2">
+                <ArrowLeft className="h-4 w-4" />
+                <span className="">Tasks</span>
               </Button>
             </Link>
-          )}
-        </div>
-      </div>
-
-      <div className="max-w-3xl px-4 py-6 space-y-5 h-screen overflow-y-auto">
-        {/* Parent task breadcrumb */}
-        {parentTask && (
-          <Link
-            href={`/task/${parentTask.id}`}
-            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <GitBranch className="h-3.5 w-3.5" />
-            Subtask of:{" "}
-            <span className="underline underline-offset-2">
-              {parentTask.title}
-            </span>
-          </Link>
-        )}
-
-        {/* Title block */}
-        <div className="space-y-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <span
-              className={cn(
-                "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold",
-                status.bg,
-                status.color
-              )}
-            >
-              {status.icon}
-              {status.label}
-            </span>
-            <span
-              className={cn(
-                "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold",
-                priority.className
-              )}
-            >
-              <span className={cn("h-1.5 w-1.5 rounded-full", priority.dot)} />
-              {priority.label} Priority
-            </span>
-            {overdue && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-300">
-                <AlertCircle className="h-3.5 w-3.5" />
-                Overdue
-              </span>
+            {isOwner && (
+              <div>
+                <Link href={`/task/${id}/edit`}>
+                  <Button size="sm" variant="outline">
+                    Edit Task
+                  </Button>
+                </Link>
+                <Button>
+                  <Button size="sm" variant="outline">
+                    Delete Task
+                  </Button>
+                </Button>
+              </div>
             )}
           </div>
-
-          <h1
-            className={cn(
-              "text-2xl font-bold leading-snug tracking-tight",
-              typedTask.status === TaskStatus.COMPLETED &&
-                "line-through text-muted-foreground"
-            )}
-          >
-            {typedTask.title}
-          </h1>
-        </div>
-
-        {/* Description */}
-        {typedTask.description && (
-          <Card className="px-5 py-4 gap-2">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Description
-            </p>
-            <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/90">
-              {typedTask.description}
-            </p>
-          </Card>
-        )}
-
-        {/* Details */}
-        <Card className="px-5 py-1 gap-0 divide-y divide-border/60">
-          <MetaRow icon={<User2 className="h-4 w-4" />} label="Assigned To">
-            {assignedUser ? (
-              <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary">
-                  {assignedUser.full_name?.charAt(0).toUpperCase()}
-                </div>
-                <span>{assignedUser.full_name}</span>
-              </div>
-            ) : (
-              <span className="text-muted-foreground">Unassigned</span>
-            )}
-          </MetaRow>
-
-          <MetaRow icon={<User2 className="h-4 w-4" />} label="Created By">
-            {createdByUser ? (
-              <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-full bg-secondary flex items-center justify-center text-[10px] font-bold">
-                  {createdByUser.full_name?.charAt(0).toUpperCase()}
-                </div>
-                <span>{createdByUser.full_name}</span>
-              </div>
-            ) : (
-              <span className="text-muted-foreground">Unknown</span>
-            )}
-          </MetaRow>
-
-          {typedTask.category && (
-            <MetaRow icon={<FolderOpen className="h-4 w-4" />} label="Category">
-              <span className="capitalize">{typedTask.category}</span>
-            </MetaRow>
-          )}
-
-          <MetaRow
-            icon={<CalendarDays className="h-4 w-4" />}
-            label="Start Date"
-          >
-            {typedTask.start_date ? (
-              <span>{formatDate(typedTask.start_date)}</span>
-            ) : (
-              <span className="text-muted-foreground">Not set</span>
-            )}
-          </MetaRow>
-
-          <MetaRow
-            icon={<CalendarCheck className="h-4 w-4" />}
-            label="Due Date"
-          >
-            {typedTask.due_date ? (
-              <span className={cn(overdue && "text-red-500 font-medium")}>
-                {formatDate(typedTask.due_date)}
-                {overdue && " · Overdue"}
-              </span>
-            ) : (
-              <span className="text-muted-foreground">Not set</span>
-            )}
-          </MetaRow>
-
-          {typedTask.completed_at && (
-            <MetaRow
-              icon={<CheckCircle2 className="h-4 w-4" />}
-              label="Completed"
+          {parentTask && (
+            <Link
+              href={`/task/${parentTask.id}`}
+              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
-              <span className="text-emerald-600 dark:text-emerald-400">
-                {formatDate(typedTask.completed_at)}
+              <GitBranch className="h-3.5 w-3.5" />
+              Subtask of:{" "}
+              <span className="underline underline-offset-2">
+                {parentTask.title}
               </span>
-            </MetaRow>
+            </Link>
           )}
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span
+                className={cn(
+                  "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold",
+                  status.bg,
+                  status.color
+                )}
+              >
+                {status.icon}
+                {status.label}
+              </span>
+              <span
+                className={cn(
+                  "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold",
+                  priority.className
+                )}
+              >
+                <span
+                  className={cn("h-1.5 w-1.5 rounded-full", priority.dot)}
+                />
+                {priority.label} Priority
+              </span>
+              {overdue && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-300">
+                  <AlertCircle className="h-3.5 w-3.5" />
+                  Overdue
+                </span>
+              )}
+            </div>
 
-          {typedTask.tags?.length > 0 && (
-            <MetaRow icon={<Tag className="h-4 w-4" />} label="Tags">
-              <div className="flex flex-wrap gap-1.5">
-                {typedTask.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="inline-flex items-center gap-1 bg-secondary text-secondary-foreground text-xs px-2 py-0.5 rounded-full font-medium"
-                  >
-                    <Hash className="h-2.5 w-2.5" />
-                    {tag}
-                  </span>
+            <h1
+              className={cn(
+                "text-2xl font-bold leading-snug tracking-tight",
+                typedTask.status === TaskStatus.COMPLETED &&
+                  "line-through text-muted-foreground"
+              )}
+            >
+              {typedTask.title}
+            </h1>
+          </div>
+          {typedTask.description && (
+            <Card className="px-5 py-4 gap-2">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Description
+              </p>
+              <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/90">
+                {typedTask.description}
+              </p>
+            </Card>
+          )}
+          <Card className="px-5 py-1 gap-0 divide-y divide-border/60">
+            <MetaRow icon={<User2 className="h-4 w-4" />} label="Assigned To">
+              {assignedUser ? (
+                <div className="flex items-center gap-2">
+                  <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary">
+                    {assignedUser.full_name?.charAt(0).toUpperCase()}
+                  </div>
+                  <span>{assignedUser.full_name}</span>
+                </div>
+              ) : (
+                <span className="text-muted-foreground">Unassigned</span>
+              )}
+            </MetaRow>
+
+            <MetaRow icon={<User2 className="h-4 w-4" />} label="Created By">
+              {createdByUser ? (
+                <div className="flex items-center gap-2">
+                  <div className="h-6 w-6 rounded-full bg-secondary flex items-center justify-center text-[10px] font-bold">
+                    {createdByUser.full_name?.charAt(0).toUpperCase()}
+                  </div>
+                  <span>{createdByUser.full_name}</span>
+                </div>
+              ) : (
+                <span className="text-muted-foreground">Unknown</span>
+              )}
+            </MetaRow>
+
+            {typedTask.category && (
+              <MetaRow
+                icon={<FolderOpen className="h-4 w-4" />}
+                label="Category"
+              >
+                <span className="capitalize">{typedTask.category}</span>
+              </MetaRow>
+            )}
+
+            <MetaRow
+              icon={<CalendarDays className="h-4 w-4" />}
+              label="Start Date"
+            >
+              {typedTask.start_date ? (
+                <span>{formatDate(typedTask.start_date)}</span>
+              ) : (
+                <span className="text-muted-foreground">Not set</span>
+              )}
+            </MetaRow>
+
+            <MetaRow
+              icon={<CalendarCheck className="h-4 w-4" />}
+              label="Due Date"
+            >
+              {typedTask.due_date ? (
+                <span className={cn(overdue && "text-red-500 font-medium")}>
+                  {formatDate(typedTask.due_date)}
+                  {overdue && " · Overdue"}
+                </span>
+              ) : (
+                <span className="text-muted-foreground">Not set</span>
+              )}
+            </MetaRow>
+
+            {typedTask.completed_at && (
+              <MetaRow
+                icon={<CheckCircle2 className="h-4 w-4" />}
+                label="Completed"
+              >
+                <span className="text-emerald-600 dark:text-emerald-400">
+                  {formatDate(typedTask.completed_at)}
+                </span>
+              </MetaRow>
+            )}
+
+            {typedTask.tags?.length > 0 && (
+              <MetaRow icon={<Tag className="h-4 w-4" />} label="Tags">
+                <div className="flex flex-wrap gap-1.5">
+                  {typedTask.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="inline-flex items-center gap-1 bg-secondary text-secondary-foreground text-xs px-2 py-0.5 rounded-full font-medium"
+                    >
+                      <Hash className="h-2.5 w-2.5" />
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </MetaRow>
+            )}
+          </Card>
+
+          <TaskAttachmentModal
+            taskId={id}
+            currentUserId={currentUser?.id ?? null}
+            assignedTo={typedTask.assigned_to ?? null}
+            initialAttachments={typedTask.attachments ?? []}
+          />
+
+          {subtasks.length > 0 && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <GitBranch className="h-4 w-4" />
+                <span className="text-xs font-semibold uppercase tracking-wider">
+                  Subtasks ({subtasks.length})
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {subtasks.map((sub) => (
+                  <TaskCard key={sub.id} task={sub} />
                 ))}
               </div>
-            </MetaRow>
+            </div>
           )}
-        </Card>
 
-        {/* Attachments */}
-        <TaskAttachmentModal
-          taskId={id}
-          currentUserId={currentUser?.id ?? null}
-          assignedTo={typedTask.assigned_to ?? null}
-          initialAttachments={typedTask.attachments ?? []}
-        />
-
-        {/* Subtasks */}
-        {subtasks.length > 0 && (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <GitBranch className="h-4 w-4" />
-              <span className="text-xs font-semibold uppercase tracking-wider">
-                Subtasks ({subtasks.length})
-              </span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {subtasks.map((sub) => (
-                <TaskCard key={sub.id} task={sub} />
-              ))}
-            </div>
+          <div className="flex flex-col sm:flex-row justify-between gap-1 text-xs text-muted-foreground pt-2 pb-8">
+            <span>Created {formatDateTime(typedTask.created_at)}</span>
+            <span>Updated {formatDateTime(typedTask.updated_at)}</span>
           </div>
-        )}
-
-        {/* Comments */}
-        <Card className="px-5 py-5 gap-4">
-          {currentUser ? (
-            <TaskComments taskId={id} currentUserId={currentUser.id} />
-          ) : (
-            <p className="text-sm text-muted-foreground text-center py-4">
-              Sign in to view and post comments.
-            </p>
-          )}
-        </Card>
-
-        {/* Timestamps */}
-        <div className="flex flex-col sm:flex-row justify-between gap-1 text-xs text-muted-foreground pt-2 pb-8">
-          <span>Created {formatDateTime(typedTask.created_at)}</span>
-          <span>Updated {formatDateTime(typedTask.updated_at)}</span>
         </div>
-      </div>
+      </Card>
+      <Card className="px-5 py-5 gap-4">
+        {currentUser ? (
+          <TaskComments taskId={id} currentUserId={currentUser.id} />
+        ) : (
+          <p className="text-sm text-muted-foreground text-center py-4">
+            Sign in to view and post comments.
+          </p>
+        )}
+      </Card>
     </div>
   );
 }

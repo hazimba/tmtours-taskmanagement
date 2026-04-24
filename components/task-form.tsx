@@ -150,6 +150,7 @@ export function TaskForm({ task }: TaskFormProps) {
         const { error } = await supabase.from("tasks").insert([
           {
             id: uuidv4(),
+            parent_id: data.parent_id || null,
             created_by: user.id,
             is_archived: false,
             ...data,
@@ -170,7 +171,6 @@ export function TaskForm({ task }: TaskFormProps) {
 
   return (
     <div className="max-w-7xl">
-      {/* Header */}
       <div className="mb-6">
         <Button
           type="button"
@@ -193,26 +193,54 @@ export function TaskForm({ task }: TaskFormProps) {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-        {/* ── Basic Info ── */}
-        <Card className="px-5 py-5 gap-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <Card className="px-5 py-5 space-y-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Basic Info
           </p>
 
-          <div className="space-y-2">
-            <Label htmlFor="title">
-              Title <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="title"
-              {...register("title")}
-              placeholder="What needs to be done?"
-              className={errors.title ? "border-red-500" : ""}
-            />
-            {errors.title && (
-              <p className="text-xs text-red-500">{errors.title.message}</p>
-            )}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="md:col-span-2 space-y-2">
+              <Label htmlFor="title">
+                Title <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="title"
+                {...register("title")}
+                placeholder="What needs to be done?"
+                className={errors.title ? "border-red-500" : ""}
+              />
+              {errors.title && (
+                <p className="text-xs text-red-500">{errors.title.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label>
+                <span className="flex items-center gap-1.5">
+                  <Link2 className="h-3.5 w-3.5" />
+                  Parent Task
+                </span>
+              </Label>
+              <Select
+                value={watchedParentId}
+                onValueChange={(v) =>
+                  setValue("parent_id", v === "none" ? "" : v)
+                }
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select parent..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">— Standalone —</SelectItem>
+                  {allTasks.map((t) => (
+                    <SelectItem key={t.id} value={t.id}>
+                      <span className="truncate">{t.title}</span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -230,58 +258,26 @@ export function TaskForm({ task }: TaskFormProps) {
               </p>
             )}
           </div>
-
-          {/* Parent Task — subtask selector */}
-          <div className="space-y-2">
-            <Label>
-              <span className="flex items-center gap-1.5">
-                <Link2 className="h-3.5 w-3.5" />
-                Parent Task{" "}
-                <span className="text-muted-foreground font-normal text-xs">
-                  (optional — makes this a subtask)
-                </span>
-              </span>
-            </Label>
-            <Select
-              value={watchedParentId}
-              onValueChange={(v) =>
-                setValue("parent_id", v === "none" ? "" : v)
-              }
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select parent task…" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">— No parent (standalone) —</SelectItem>
-                {allTasks.map((t) => (
-                  <SelectItem key={t.id} value={t.id}>
-                    <span className="truncate">{t.title}</span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
         </Card>
 
-        {/* ── Assignment & Status ── */}
-        <Card className="px-5 py-5 gap-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Assignment & Status
-          </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="px-5 py-5 space-y-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Assignment & Status
+            </p>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Status</Label>
-              <Select
-                value={watchedStatus}
-                onValueChange={(v) => setValue("status", v as TaskStatus)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectLabel>Status</SelectLabel>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Status</Label>
+                <Select
+                  value={watchedStatus}
+                  onValueChange={(v) => setValue("status", v as TaskStatus)}
+                  disabled={!isEdit}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
                     <SelectItem value={TaskStatus.TODO}>To Do</SelectItem>
                     <SelectItem value={TaskStatus.IN_PROGRESS}>
                       In Progress
@@ -293,148 +289,143 @@ export function TaskForm({ task }: TaskFormProps) {
                     <SelectItem value={TaskStatus.CANCELLED}>
                       Cancelled
                     </SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </div>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div className="space-y-2">
-              <Label>Priority</Label>
-              <Select
-                value={watchedPriority}
-                onValueChange={(v) => setValue("priority", v as TaskPriority)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select priority" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectLabel>Priority</SelectLabel>
+              <div className="space-y-2">
+                <Label>Priority</Label>
+                <Select
+                  value={watchedPriority}
+                  onValueChange={(v) => setValue("priority", v as TaskPriority)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select priority" />
+                  </SelectTrigger>
+                  <SelectContent>
                     <SelectItem value={TaskPriority.LOW}>Low</SelectItem>
                     <SelectItem value={TaskPriority.MEDIUM}>Medium</SelectItem>
                     <SelectItem value={TaskPriority.HIGH}>High</SelectItem>
                     <SelectItem value={TaskPriority.URGENT}>Urgent</SelectItem>
-                  </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Assigned To</Label>
+              <Select
+                value={watchedAssignedTo}
+                onValueChange={(v) =>
+                  setValue("assigned_to", v === "unassigned" ? "" : v)
+                }
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Assign to someone…" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="unassigned">— Unassigned —</SelectItem>
+                  {users.map((u) => (
+                    <SelectItem key={u.id} value={u.id}>
+                      {u.full_name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
-          </div>
+          </Card>
 
-          <div className="space-y-2">
-            <Label>Assigned To</Label>
-            <Select
-              value={watchedAssignedTo}
-              onValueChange={(v) =>
-                setValue("assigned_to", v === "unassigned" ? "" : v)
-              }
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Assign to someone…" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="unassigned">— Unassigned —</SelectItem>
-                {users.map((u) => (
-                  <SelectItem key={u.id} value={u.id}>
-                    {u.full_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </Card>
-
-        {/* ── Dates ── */}
-        <Card className="px-5 py-5 gap-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Dates
-          </p>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Start Date</Label>
-              <SingleDatePicker
-                value={
-                  watchedStartDate ? new Date(watchedStartDate) : undefined
-                }
-                onChange={(date) =>
-                  setValue("start_date", date?.toISOString() ?? "")
-                }
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Due Date</Label>
-              <SingleDatePicker
-                value={watchedDueDate ? new Date(watchedDueDate) : undefined}
-                onChange={(date) =>
-                  setValue("due_date", date?.toISOString() ?? "")
-                }
-              />
-            </div>
-          </div>
-        </Card>
-
-        {/* ── Category & Tags ── */}
-        <Card className="px-5 py-5 gap-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Category & Tags
-          </p>
-
-          <div className="space-y-2">
-            <Label htmlFor="category">Category</Label>
-            <Input
-              id="category"
-              {...register("category")}
-              placeholder="e.g. Marketing, Development…"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Tags</Label>
-            <div className="flex gap-2">
-              <Input
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                placeholder="Type a tag and press Enter"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    addTag();
+          <Card className="px-5 py-5 space-y-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Timeline
+            </p>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Start Date</Label>
+                <SingleDatePicker
+                  value={
+                    watchedStartDate ? new Date(watchedStartDate) : undefined
                   }
-                }}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                onClick={addTag}
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-            {watchedTags.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-2">
-                {watchedTags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="inline-flex items-center gap-1 bg-secondary text-secondary-foreground text-xs px-2 py-1 rounded-full"
-                  >
-                    {tag}
-                    <button
-                      type="button"
-                      onClick={() => removeTag(tag)}
-                      className="hover:text-destructive transition-colors"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </span>
-                ))}
+                  onChange={(date) =>
+                    setValue("start_date", date?.toISOString() ?? "")
+                  }
+                />
               </div>
-            )}
-          </div>
-        </Card>
+              <div className="space-y-2">
+                <Label>Due Date</Label>
+                <SingleDatePicker
+                  value={watchedDueDate ? new Date(watchedDueDate) : undefined}
+                  onChange={(date) =>
+                    setValue("due_date", date?.toISOString() ?? "")
+                  }
+                />
+              </div>
+            </div>
+          </Card>
+          <Card className="px-5 py-5 space-y-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Categorization
+            </p>
 
-        {/* ── Actions ── */}
-        <div className="flex gap-3 pb-10">
-          <Button type="submit" disabled={isSubmitting} className="flex-1">
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="category">Category</Label>
+                <Input
+                  id="category"
+                  {...register("category")}
+                  placeholder="e.g. Marketing, Development…"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Tags</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    placeholder="Add tag and press Enter"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        addTag();
+                      }
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={addTag}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                {watchedTags.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {watchedTags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="inline-flex items-center gap-1 bg-secondary text-secondary-foreground text-xs px-2 py-1 rounded-full"
+                      >
+                        {tag}
+                        <button
+                          type="button"
+                          onClick={() => removeTag(tag)}
+                          className="hover:text-destructive transition-colors"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        <div className="flex justify-end gap-3 pb-10">
+          <Button type="submit" disabled={isSubmitting} className="">
             {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             {isSubmitting
               ? isEdit
