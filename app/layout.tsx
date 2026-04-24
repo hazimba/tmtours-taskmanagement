@@ -20,7 +20,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TM Tours Task Management",
+  title: "SYNCTASK | Management",
   description:
     "A task management application built with Next.js, Supabase, and Tailwind CSS.",
 };

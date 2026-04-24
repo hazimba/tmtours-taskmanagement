@@ -72,7 +72,6 @@ export function TaskComments({ taskId, currentUserId }: TaskCommentsProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
 
   const {
     register,
@@ -141,11 +140,6 @@ export function TaskComments({ taskId, currentUserId }: TaskCommentsProps) {
       supabase.removeChannel(channel);
     };
   }, [taskId]);
-
-  // scroll to bottom on new comments
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [comments.length]);
 
   // ── refetch helper ─────────────────────────────────────────────────────────
 
@@ -349,7 +343,6 @@ export function TaskComments({ taskId, currentUserId }: TaskCommentsProps) {
               </div>
             );
           })}
-          <div ref={bottomRef} />
         </div>
       )}
 
@@ -364,7 +357,7 @@ export function TaskComments({ taskId, currentUserId }: TaskCommentsProps) {
             placeholder="Write a comment…"
             rows={2}
             className={cn(
-              "resize-none text-sm",
+              "resize-none text-base",
               errors.content && "border-red-500"
             )}
             onKeyDown={(e) => {

@@ -202,17 +202,15 @@ export default async function TaskDetailPage({
   const parentTask = parentTaskRes.data as Task | null;
   const subtasks = (subtasksRes.data ?? []) as Task[];
 
-  console.log("createdByUser", createdByUser);
-
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-1">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-1 px-1 md:px-0">
       <Card className="scrollbar-hide overflow-y-auto p-4">
         <div className="space-y-5">
-          <div className="flex pb-8 items-center justify-between gap-4">
+          <div className="flex items-center justify-between gap-4">
             <Link href="/task">
               <Button variant="ghost" size="sm" className="gap-1.5 -ml-2">
                 <ArrowLeft className="h-4 w-4" />
-                <span className="">Tasks</span>
+                <span className="">Back</span>
               </Button>
             </Link>
             {isOwner && (
@@ -275,7 +273,7 @@ export default async function TaskDetailPage({
 
             <h1
               className={cn(
-                "text-2xl font-bold leading-snug tracking-tight",
+                "text-2xl font-bold leading-snug tracking-tight py-4",
                 typedTask.status === TaskStatus.COMPLETED &&
                   "line-through text-muted-foreground"
               )}
@@ -413,7 +411,7 @@ export default async function TaskDetailPage({
             </div>
           )}
 
-          <div className="flex flex-col sm:flex-row justify-between gap-1 text-xs text-muted-foreground pt-2 pb-8">
+          <div className="flex flex-col sm:flex-row justify-between gap-1 text-xs text-muted-foreground py-2">
             <span>Created {formatDateTime(typedTask.created_at)}</span>
             <span>Updated {formatDateTime(typedTask.updated_at)}</span>
           </div>

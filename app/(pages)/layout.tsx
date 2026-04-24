@@ -25,9 +25,9 @@ const PageLayout = ({ children }: { children: React.ReactNode }) => {
               height={32}
               className="rounded-lg"
             /> */}
-            <span className="flex items-center gap-2 font-bold text-xl tracking-widest select-none">
-              <span className="w-2 h-2 rounded-full bg-indigo-600"></span>
-              SYNCTASK
+            <span className="flex items-center gap-6 font-bold text-xl tracking-[5px] select-none">
+              <span className="w-3 h-3 rounded-full bg-indigo-600 animate-pulse"></span>
+              <div>SYNCTASK</div>
             </span>
           </Link>
 

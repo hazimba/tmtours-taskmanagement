@@ -9,10 +9,12 @@ import {
   Shield,
   CircleCheck,
   Pencil,
+  AlertTriangle,
 } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { User } from "@/types";
@@ -106,6 +108,13 @@ const ProfilePage = async () => {
   }
 
   const isActive = data.status?.toUpperCase() === "ACTIVE";
+  const incompleteFields: string[] = [];
+  if (!data.full_name) incompleteFields.push("Full name");
+  if (!data.phone) incompleteFields.push("Phone number");
+  if (!data.location) incompleteFields.push("Location");
+  if (!data.position) incompleteFields.push("Position");
+  if (!data.department) incompleteFields.push("Department");
+  if (!data.avatar_url) incompleteFields.push("Profile photo");
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4">
@@ -174,10 +183,12 @@ const ProfilePage = async () => {
             </div>
 
             <div className="mt-4 sm:mt-0 sm:pb-2">
-              <Button variant="outline" size="sm">
-                <Pencil className="size-3.5" />
-                Edit profile
-              </Button>
+              <Link href="/profile/edit">
+                <Button variant="outline" size="sm">
+                  <Pencil className="size-3.5" />
+                  Edit profile
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -214,7 +225,7 @@ const ProfilePage = async () => {
       <Card className="mt-4">
         <CardHeader>
           <CardTitle>Account</CardTitle>
-        </CardHeader>
+        </CardHeader>{" "}
         <CardContent>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="flex items-center gap-3">
@@ -247,6 +258,44 @@ const ProfilePage = async () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Incomplete profile warning */}
+      {incompleteFields.length > 0 && (
+        <Card className="mt-4 border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/30">
+          <CardContent className="p-4 flex gap-3">
+            <AlertTriangle className="size-5 text-amber-500 shrink-0 mt-0.5" />
+            <div className="space-y-1.5">
+              <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">
+                Your profile is incomplete
+              </p>
+              <p className="text-xs text-amber-600 dark:text-amber-500">
+                Please fill in the following fields to complete your profile:
+              </p>
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {incompleteFields.map((f) => (
+                  <span
+                    key={f}
+                    className="inline-flex items-center rounded-full bg-amber-100 dark:bg-amber-900/50 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-300"
+                  >
+                    {f}
+                  </span>
+                ))}
+              </div>
+              <div className="pt-2">
+                <Link href="/profile/edit">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-xs h-7 border-amber-400 text-amber-700 hover:bg-amber-100 dark:text-amber-400 dark:border-amber-700 dark:hover:bg-amber-900/40"
+                  >
+                    Complete profile
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
