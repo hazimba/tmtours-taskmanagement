@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import Link from "next/link";
 import BottomNav from "./bottom-nav";
+import Image from "next/image";
 
 const PageLayout = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -26,8 +27,15 @@ const PageLayout = ({ children }: { children: React.ReactNode }) => {
               className="rounded-lg"
             /> */}
             <span className="flex items-center gap-6 font-bold text-xl tracking-[5px] select-none">
-              <span className="w-3 h-3 rounded-full bg-indigo-600 animate-pulse"></span>
+              <Image
+                src="/image.png"
+                alt="Logo"
+                width={24}
+                height={24}
+                className="rounded-lg"
+              />
               <div>SYNCTASK</div>
+              <span className="w-3 h-3 rounded-full bg-indigo-600 animate-pulse"></span>
             </span>
           </Link>
 
