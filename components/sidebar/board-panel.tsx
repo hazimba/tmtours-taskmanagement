@@ -21,7 +21,7 @@ export function BoardPanel({ tasks }: { tasks: Task[] }) {
           Priority × Status
         </CardTitle>
       </CardHeader>
-      <CardContent className="px-4 pb-4 space-y-3">
+      <CardContent className="px-4 pb-4 space-y-3 md:space-y-10">
         {tasks.length === 0 && (
           <p className="text-xs text-muted-foreground text-center py-4">
             No tasks yet.
