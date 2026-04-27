@@ -8,7 +8,6 @@ import { UserPlus, CheckCircle2, XCircle, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/lib/supabaseClient";
-// import { createClient as supabaseServer } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -50,6 +49,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 const UsersPage = () => {
   const [users, setUsers] = useState<Profile[]>([]);
+  const [loggedIn, setLoggedIn] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [companyName, setCompanyName] = useState("");
@@ -57,6 +57,17 @@ const UsersPage = () => {
   const [companyFound, setCompanyFound] = useState<boolean | null>(null);
 
   console.log("users", users);
+
+  useEffect(() => {
+    const fetchLoggedInUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      setLoggedIn(user?.user_metadata as Profile | null);
+    };
+
+    fetchLoggedInUser();
+  }, []);
 
   const {
     register,
@@ -73,8 +84,6 @@ const UsersPage = () => {
   const companyCode = useWatch({ control, name: "company_code" });
 
   const fetchUsers = async () => {
-    // const sp = await supabaseServer();
-
     const { data, error } = await supabase
       .from("profiles")
       .select(`*, company:companies (id, name)`)
@@ -110,17 +119,19 @@ const UsersPage = () => {
   };
 
   useEffect(() => {
-    supabase
-      .from("profiles")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .then(({ data, error }) => {
-        if (error) {
-          toast.error(error.message);
-          return;
-        }
-        setUsers(data ?? []);
-      });
+    const fetchUsers = async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select(`*, company:companies (id, name)`)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+      setUsers((data as Profile[]) ?? []);
+    };
+    fetchUsers();
   }, []);
 
   useEffect(() => {
@@ -173,6 +184,21 @@ const UsersPage = () => {
     }
   };
 
+  const usersByCompany = users.reduce<Record<string, Profile[]>>(
+    (acc, user) => {
+      const companyName = user.company?.name ?? "No Company";
+
+      if (!acc[companyName]) {
+        acc[companyName] = [];
+      }
+
+      acc[companyName].push(user);
+
+      return acc;
+    },
+    {}
+  );
+
   return (
     <div className="space-y-6 p-6">
       <div>
@@ -208,7 +234,7 @@ const UsersPage = () => {
                 <Input
                   {...register("email")}
                   type="email"
-                  placeholder="john@company.com"
+                  placeholder="Enter user's email address"
                 />
                 {errors.email && (
                   <p className="text-xs text-destructive">
@@ -251,7 +277,7 @@ const UsersPage = () => {
                 <label className="text-sm font-medium">Company Code</label>
                 <Input
                   {...register("company_code")}
-                  placeholder="e.g. HTM-001"
+                  placeholder="e.g. CODE-123 (ask your superadmin)"
                 />
                 {errors.company_code && (
                   <p className="text-xs text-destructive">
@@ -298,8 +324,15 @@ const UsersPage = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="USER">User</SelectItem>
-                    <SelectItem value="ADMIN">Admin</SelectItem>
-                    <SelectItem value="SUPERADMIN">Super Admin</SelectItem>
+                    {loggedIn?.role === "SUPERADMIN" && (
+                      <SelectItem value="ADMIN">Admin</SelectItem>
+                    )}
+                    {loggedIn?.role === "ADMIN" && (
+                      <SelectItem value="ADMIN">Admin</SelectItem>
+                    )}
+                    {loggedIn?.role === "SUPERADMIN" && (
+                      <SelectItem value="SUPERADMIN">Super Admin</SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -349,47 +382,74 @@ const UsersPage = () => {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {users.map((user) => (
-              <Card key={user.id}>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base">
-                    {user.full_name || (
-                      <span className="text-muted-foreground italic font-normal">
-                        Pending setup
-                      </span>
-                    )}
-                  </CardTitle>
-                  <p className="text-xs text-muted-foreground">{user.email}</p>
-                </CardHeader>
-                <CardContent className="space-y-2 text-sm">
-                  <div className="flex gap-2 flex-wrap">
-                    <span
-                      className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                        ROLE_COLORS[user.role] ?? ROLE_COLORS["USER"]
-                      }`}
-                    >
-                      {user.role}
-                    </span>
-                    <span
-                      className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                        STATUS_COLORS[user.status] ?? STATUS_COLORS["ACTIVE"]
-                      }`}
-                    >
-                      {user.status}
+          <div className="space-y-8">
+            {Object.entries(usersByCompany).map(
+              ([companyName, companyUsers]) => (
+                <div key={companyName} className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-base font-semibold">{companyName}</h3>
+
+                    <span className="text-xs text-muted-foreground">
+                      {companyUsers.length} user
+                      {companyUsers.length > 1 ? "s" : ""}
                     </span>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Joined:{" "}
-                    {new Date(user.created_at).toLocaleDateString("en-MY", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    })}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
+
+                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    {companyUsers.map((user) => (
+                      <Card key={user.id}>
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-base">
+                            {user.full_name || (
+                              <span className="text-muted-foreground italic font-normal">
+                                Pending setup
+                              </span>
+                            )}
+                          </CardTitle>
+
+                          <p className="text-xs text-muted-foreground">
+                            {user.email}
+                          </p>
+                        </CardHeader>
+
+                        <CardContent className="space-y-2 text-sm">
+                          <div className="flex gap-2 flex-wrap">
+                            <span
+                              className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                                ROLE_COLORS[user.role] ?? ROLE_COLORS["USER"]
+                              }`}
+                            >
+                              {user.role}
+                            </span>
+
+                            <span
+                              className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                                STATUS_COLORS[user.status] ??
+                                STATUS_COLORS["ACTIVE"]
+                              }`}
+                            >
+                              {user.status}
+                            </span>
+                          </div>
+
+                          <p className="text-xs text-muted-foreground">
+                            Joined:{" "}
+                            {new Date(user.created_at).toLocaleDateString(
+                              "en-MY",
+                              {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                              }
+                            )}
+                          </p>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )
+            )}
           </div>
         )}
       </div>

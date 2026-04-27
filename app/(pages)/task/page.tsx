@@ -1,6 +1,7 @@
 import { createClient as sp } from "@/lib/supabase/server";
 import { Task } from "@/app/types";
 import { TaskBoard } from "@/components/task-board";
+import { getActiveCompanyId } from "@/lib/get-active-company";
 
 const TaskPage = async () => {
   const supabaseServer = await sp();
@@ -18,13 +19,18 @@ const TaskPage = async () => {
     );
   }
 
-  const { data: tasks, error } = await supabaseServer
+  const meta = user.user_metadata as Record<string, string> | undefined;
+  const activeCompanyId = await getActiveCompanyId(meta);
+
+  const query = supabaseServer
     .from("tasks")
     .select("*")
     .eq("is_archived", false)
     .order("created_at", { ascending: false });
 
-  console.log("tasks", tasks);
+  if (activeCompanyId) query.eq("company_id", activeCompanyId);
+
+  const { data: tasks, error } = await query;
 
   if (error) {
     console.error("Error fetching tasks:", error);
@@ -38,7 +44,10 @@ const TaskPage = async () => {
 
   return (
     <div className="w-full">
-      <TaskBoard initialTasks={(tasks ?? []) as Task[]} />
+      <TaskBoard
+        key={activeCompanyId ?? "all"}
+        initialTasks={(tasks ?? []) as Task[]}
+      />
     </div>
   );
 };

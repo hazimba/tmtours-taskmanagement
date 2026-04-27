@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SYNCTASK | Management",
+  title: "HYNOJURA | Tasks Mgt",
   description:
     "A task management application built with Next.js, Supabase, and Tailwind CSS.",
 };

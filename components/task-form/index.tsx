@@ -13,6 +13,7 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import { TaskFields } from "./fields";
 import { Profile, TaskPriority, TaskStatus } from "@/app/types";
 import { Task } from "@/app/types";
+import { useCompanyStore } from "@/lib/stores/company-store";
 
 interface TaskFormProps {
   task?: Task;
@@ -26,6 +27,8 @@ export function TaskForm({ task }: TaskFormProps) {
   const [users, setUsers] = useState<Profile[]>([]);
   const [allTasks, setAllTasks] = useState<Task[]>([]);
   const [companyId, setCompanyId] = useState<string | null>(null);
+
+  const triggerTaskRefresh = useCompanyStore((s) => s.triggerTaskRefresh);
 
   const copyTitle = searchParams.get("title") ?? undefined;
   const copyDefaults = copyTitle
@@ -140,6 +143,7 @@ export function TaskForm({ task }: TaskFormProps) {
           .eq("id", task!.id);
         if (error) throw error;
         toast.success("Task updated!");
+        triggerTaskRefresh();
         router.push(`/task/${task!.id}`);
       } else {
         const {
@@ -174,6 +178,7 @@ export function TaskForm({ task }: TaskFormProps) {
         ]);
         if (error) throw error;
         toast.success("Task created!");
+        triggerTaskRefresh();
         reset();
         router.push("/task");
       }
