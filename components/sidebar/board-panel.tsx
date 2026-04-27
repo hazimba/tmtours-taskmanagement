@@ -1,6 +1,6 @@
 "use client";
 
-import { Task, TaskStatus, TaskPriority } from "@/types";
+import { Task, TaskPriority, TaskStatus } from "@/app/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { STATUS_META, PRIORITY_META } from "@/components/shared/task-meta";

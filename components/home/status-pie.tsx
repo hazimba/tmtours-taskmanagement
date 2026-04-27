@@ -9,7 +9,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { Task } from "@/types";
+import { Task } from "@/app/types";
 
 const STATUS_COLOR: Record<string, string> = {
   TODO: "#94a3b8",

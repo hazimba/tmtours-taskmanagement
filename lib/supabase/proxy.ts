@@ -44,10 +44,21 @@ export async function updateSession(request: NextRequest) {
   const user = data?.claims;
 
   const pathname = request.nextUrl.pathname;
-  const isAdminRoute =
-    pathname.startsWith("/home") || pathname.startsWith("/tasks");
 
-  if (!user && isAdminRoute) {
+  // Public routes that don't require authentication
+  const isPublicRoute =
+    pathname.startsWith("/auth") ||
+    pathname.startsWith("/api") ||
+    pathname === "/";
+
+  const isProtectedRoute =
+    !isPublicRoute &&
+    (pathname.startsWith("/home") ||
+      pathname.startsWith("/task") ||
+      pathname.startsWith("/profile") ||
+      pathname.startsWith("/settings"));
+
+  if (!user && isProtectedRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth/login";
     return NextResponse.redirect(url);

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import { Task } from "@/types";
+import { Task } from "@/app/types";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -39,10 +39,13 @@ export function TaskDeleteDialog({
     // We also remove any uploaded files from storage bucket.
     try {
       // Delete storage files
+      // @ts-expect-error - attachments is JSONB array of { url: string, name: string }
       if (task.attachments?.length > 0) {
+        // @ts-expect-error - attachments is JSONB array of { url: string, name: string }
         const filePaths = task.attachments
+          // @ts-expect-error - attachments is JSONB array of { url: string, name: string }
           .filter((a) => a.url.includes("task-files"))
-          .map((a) => {
+          .map((a: any) => {
             try {
               const url = new URL(a.url);
               const parts = url.pathname.split("/task-files/");

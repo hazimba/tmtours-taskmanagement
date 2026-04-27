@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist_Mono, Montserrat, Nunito } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import { ModeToggle } from "@/components/mode-toggle";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -37,14 +36,7 @@ export default function RootLayout({
       className={`${nunito.variable} ${montserrat.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-        </ThemeProvider>
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );

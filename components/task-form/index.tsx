@@ -5,13 +5,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter, useSearchParams } from "next/navigation";
 import { taskSchema, type TaskFormData } from "@/lib/validations/task";
-import { Task, TaskPriority, TaskStatus, User } from "@/types";
 import { supabase } from "@/lib/supabaseClient";
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { TaskFields } from "./fields";
+import { Profile, TaskPriority, TaskStatus } from "@/app/types";
+import { Task } from "@/app/types";
 
 interface TaskFormProps {
   task?: Task;
@@ -22,8 +23,9 @@ export function TaskForm({ task }: TaskFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<Profile[]>([]);
   const [allTasks, setAllTasks] = useState<Task[]>([]);
+  const [companyId, setCompanyId] = useState<string | null>(null);
 
   const copyTitle = searchParams.get("title") ?? undefined;
   const copyDefaults = copyTitle
@@ -70,15 +72,40 @@ export function TaskForm({ task }: TaskFormProps) {
 
   useEffect(() => {
     async function load() {
+      const {
+        data: { user: authUser },
+      } = await supabase.auth.getUser();
+
+      if (!authUser) return;
+
+      // Fetch current user's profile to get their company_id (via profiles_company_id_fkey)
+      const { data: myProfile } = await supabase
+        .from("profiles")
+        .select("company_id")
+        .eq("id", authUser.id)
+        .single();
+
+      const cid = myProfile?.company_id ?? null;
+      setCompanyId(cid);
+
+      if (!cid) return;
+
       const [{ data: usersData }, { data: tasksData }] = await Promise.all([
-        supabase.from("profiles").select("id, full_name, avatar_url, email"),
+        // Only show users from the same company
+        supabase
+          .from("profiles")
+          .select("id, full_name, avatar_url, email, company_id")
+          .eq("company_id", cid),
+        // Only show tasks from the same company
         supabase
           .from("tasks")
           .select("id, title, status")
           .eq("is_archived", false)
+          .eq("company_id", cid)
           .order("created_at", { ascending: false }),
       ]);
-      if (usersData) setUsers(usersData as User[]);
+
+      if (usersData) setUsers(usersData as Profile[]);
       if (tasksData)
         setAllTasks(
           (tasksData as Task[]).filter((t) => !isEdit || t.id !== task?.id)
@@ -91,6 +118,7 @@ export function TaskForm({ task }: TaskFormProps) {
     const {
       data: { user },
     } = await supabase.auth.getUser();
+
     if (!user?.id) {
       toast.error("You must be logged in.");
       router.push("/login");
@@ -114,18 +142,36 @@ export function TaskForm({ task }: TaskFormProps) {
         toast.success("Task updated!");
         router.push(`/task/${task!.id}`);
       } else {
-        const { error } = await supabase
-          .from("tasks")
-          .insert([
-            {
-              id: uuidv4(),
-              parent_id: data.parent_id || null,
-              assigned_to: data.assigned_to || null,
-              created_by: user.id,
-              is_archived: false,
-              ...data,
-            },
-          ]);
+        const {
+          title,
+          description,
+          status,
+          priority,
+          category,
+          tags,
+          assigned_to,
+          parent_id,
+          start_date,
+          due_date,
+        } = data;
+        const { error } = await supabase.from("tasks").insert([
+          {
+            id: uuidv4(),
+            created_by: user.id,
+            is_archived: false,
+            company_id: companyId, // from state — set during load()
+            title,
+            description: description || null,
+            status,
+            priority,
+            category: category || null,
+            tags,
+            assigned_to: assigned_to || null,
+            parent_id: parent_id || null,
+            start_date: start_date || null,
+            due_date: due_date || null,
+          },
+        ]);
         if (error) throw error;
         toast.success("Task created!");
         reset();

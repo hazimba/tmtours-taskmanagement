@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { TaskStatus, TaskPriority } from "@/types";
+import { TaskStatus, TaskPriority } from "@/app/types";
 
 export const taskSchema = z.object({
   title: z

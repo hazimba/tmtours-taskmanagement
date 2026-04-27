@@ -8,7 +8,7 @@ import {
   type TaskCommentFormData,
 } from "@/lib/validations/task";
 import { supabase } from "@/lib/supabaseClient";
-import { User } from "@/types";
+import { Profile } from "@/app/types";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Send, MessageSquare } from "lucide-react";
@@ -25,7 +25,7 @@ export interface TaskComment {
   content: string;
   created_at: string;
   updated_at: string;
-  user?: Pick<User, "id" | "full_name" | "avatar_url">;
+  user?: Pick<Profile, "id" | "full_name" | "avatar_url">;
 }
 
 // ─── component ────────────────────────────────────────────────────────────────
@@ -111,15 +111,13 @@ export function TaskComments({ taskId, currentUserId }: TaskCommentsProps) {
   }, [taskId]);
 
   const onSubmit = async (data: TaskCommentFormData) => {
-    const { error } = await supabase
-      .from("task_comments")
-      .insert([
-        {
-          task_id: taskId,
-          user_id: currentUserId,
-          content: data.content.trim(),
-        },
-      ]);
+    const { error } = await supabase.from("task_comments").insert([
+      {
+        task_id: taskId,
+        user_id: currentUserId,
+        content: data.content.trim(),
+      },
+    ]);
     if (error) toast.error("Failed to post comment.");
     else {
       reset();

@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { Task } from "@/types";
+import { Task } from "@/app/types";
 import { notFound } from "next/navigation";
 import { TaskForm } from "@/components/task-form";
 

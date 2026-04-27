@@ -1,6 +1,6 @@
 "use client";
 
-import { TaskAttachment } from "@/types";
+import { TaskAttachment } from "@/app/types";
 import {
   FileText,
   FileImage,

@@ -1,12 +1,12 @@
 "use client";
 
-import { User } from "@/types";
+import { Profile } from "@/app/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getInitials } from "@/components/shared/task-meta";
 import { LiveClock } from "./live-clock";
 
-export function HomePanel({ profile }: { profile: User | null }) {
+export function HomePanel({ profile }: { profile: Profile | null }) {
   return (
     <div className="space-y-3">
       <Card>

@@ -8,6 +8,7 @@ import {
   Home,
   List,
   PanelRight,
+  Settings,
   User,
 } from "lucide-react";
 import Link from "next/link";
@@ -29,6 +30,12 @@ const LeftNavigation = ({ children }: LeftNavigationProps) => {
     { href: "/task/list", label: "List", icon: List },
     { href: "/profile", label: "Profile", icon: User },
   ];
+
+  const sidebarSettingItems = [
+    { href: "/settings/users", label: "Users", icon: User },
+    { href: "/settings/companies", label: "Companies", icon: User },
+  ];
+
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -72,7 +79,7 @@ const LeftNavigation = ({ children }: LeftNavigationProps) => {
             )}
           </button>
 
-          <nav className="flex-1 p-3 space-y-2 overflow-y-auto pt-6">
+          <nav className="flex-1 p-3 space-y-2 overflow-y-auto pt-6 justify-between">
             <div className="px-3 pb-6 pt-2 h-6 flex items-center">
               <span
                 className={`text-xs font-semibold text-muted-foreground uppercase tracking-wider transition-all duration-200 ${
@@ -89,6 +96,46 @@ const LeftNavigation = ({ children }: LeftNavigationProps) => {
                     (pathname.startsWith("/task/") &&
                       !pathname.startsWith("/task/list"))
                   : pathname === href || pathname.startsWith(href + "/");
+
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={cn(
+                    "flex items-center rounded-lg text-sm font-medium transition-all duration-300 group",
+                    isActive
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                    isCollapsed
+                      ? "justify-start px-3 py-2.5"
+                      : "gap-3 px-3 py-2.5"
+                  )}
+                >
+                  <Icon
+                    className={cn("h-4 w-4 shrink-0", isCollapsed && "h-5 w-5")}
+                  />
+                  {!isCollapsed && (
+                    <span className="truncate opacity-100 transition-opacity duration-300">
+                      {label}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
+          <nav className="flex-1 p-3 space-y-2 overflow-y-auto pt-6">
+            <div className="px-3 pb-6 pt-2 h-6 flex items-center">
+              <span
+                className={`text-xs font-semibold text-muted-foreground uppercase tracking-wider transition-all duration-200 ${
+                  isCollapsed ? "opacity-0 scale-95" : "opacity-100 scale-100"
+                }`}
+              >
+                Settings
+              </span>
+            </div>
+            {sidebarSettingItems.map(({ href, label, icon: Icon }) => {
+              const isActive =
+                pathname === href || pathname.startsWith(href + "/");
 
               return (
                 <Link

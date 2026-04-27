@@ -1,6 +1,6 @@
 // Shared task metadata constants and helpers used across components.
 import React from "react";
-import { TaskStatus, TaskPriority } from "@/types";
+import { TaskPriority, TaskStatus } from "@/app/types";
 import {
   CircleDashed,
   CircleDot,

@@ -1,6 +1,11 @@
-import { createClient } from "@/lib/supabase/client";
 import { createClient as clientServer } from "@/lib/supabase/server";
-import { Task, TaskPriority, TaskStatus, User } from "@/types";
+import {
+  Task,
+  TaskPriority,
+  TaskStatus,
+  Profile,
+  TaskAttachment,
+} from "@/app/types";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -143,14 +148,14 @@ export default async function TaskDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const supabase = await createClient();
+  // const supabase = await createClient();
   const supabaseServer = await clientServer();
 
   const {
     data: { user: currentUser },
   } = await supabaseServer.auth.getUser();
 
-  const { data: task, error } = await supabase
+  const { data: task, error } = await supabaseServer
     .from("tasks")
     .select("*")
     .eq("id", id)
@@ -170,35 +175,35 @@ export default async function TaskDetailPage({
   const [assignedUserRes, createdByUserRes, parentTaskRes, subtasksRes] =
     await Promise.all([
       typedTask.assigned_to
-        ? supabase
+        ? supabaseServer
             .from("profiles")
             .select("*")
             .eq("id", typedTask.assigned_to)
             .single()
         : Promise.resolve({ data: null }),
       typedTask.created_by
-        ? supabase
+        ? supabaseServer
             .from("profiles")
             .select("*")
             .eq("id", typedTask.created_by)
             .single()
         : Promise.resolve({ data: null }),
       typedTask.parent_id
-        ? supabase
+        ? supabaseServer
             .from("tasks")
             .select("*")
             .eq("id", typedTask.parent_id)
             .single()
         : Promise.resolve({ data: null }),
-      supabase
+      supabaseServer
         .from("tasks")
         .select("*")
         .eq("parent_id", id)
         .eq("is_archived", false),
     ]);
 
-  const assignedUser = assignedUserRes.data as User | null;
-  const createdByUser = createdByUserRes.data as User | null;
+  const assignedUser = assignedUserRes.data as Profile;
+  const createdByUser = createdByUserRes.data as Profile;
   const parentTask = parentTaskRes.data as Task | null;
   const subtasks = (subtasksRes.data ?? []) as Task[];
 
@@ -371,7 +376,7 @@ export default async function TaskDetailPage({
               </MetaRow>
             )}
 
-            {typedTask.tags?.length > 0 && (
+            {Array.isArray(typedTask.tags) && typedTask.tags.length > 0 && (
               <MetaRow icon={<Tag className="h-4 w-4" />} label="Tags">
                 <div className="flex flex-wrap gap-1.5">
                   {typedTask.tags.map((tag) => (
@@ -392,7 +397,9 @@ export default async function TaskDetailPage({
             taskId={id}
             currentUserId={currentUser?.id ?? null}
             assignedTo={typedTask.assigned_to ?? null}
-            initialAttachments={typedTask.attachments ?? []}
+            initialAttachments={
+              (typedTask.attachments as TaskAttachment[]) ?? []
+            }
           />
 
           {subtasks.length > 0 && (

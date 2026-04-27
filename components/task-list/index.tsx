@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { Task, TaskPriority, TaskStatus, User } from "@/types";
+import { Task, TaskStatus, Profile } from "@/app/types";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,8 +18,8 @@ const PAGE_SIZE = 20;
 
 interface TaskListViewProps {
   initialTasks: Task[];
-  users: Pick<User, "id" | "full_name" | "avatar_url">[];
-  currentUser?: User | null;
+  users: Pick<Profile, "id" | "full_name" | "avatar_url">[];
+  currentUser?: any;
 }
 
 export function TaskListView({
@@ -27,6 +27,7 @@ export function TaskListView({
   users,
   currentUser,
 }: TaskListViewProps) {
+  console.log("initialTasks", initialTasks);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterPriority, setFilterPriority] = useState("all");

@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { TaskStatus, TaskPriority, User } from "@/types";
+import { TaskStatus, TaskPriority, Profile } from "@/app/types";
 import { STATUS_META, PRIORITY_META } from "@/components/shared/task-meta";
 
 type SortField = "created_at" | "due_date" | "priority" | "title" | "status";
@@ -32,7 +32,7 @@ interface TaskFiltersProps {
   onFilterParentOnly: (v: boolean) => void;
   filterHasSubtasks: boolean;
   onFilterHasSubtasks: (v: boolean) => void;
-  users: Pick<User, "id" | "full_name">[];
+  users: Pick<Profile, "id" | "full_name">[];
   activeFilterCount: number;
   onClearFilters: () => void;
 }
