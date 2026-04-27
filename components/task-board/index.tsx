@@ -14,7 +14,7 @@ import {
   type DragOverEvent,
 } from "@dnd-kit/core";
 import { supabase } from "@/lib/supabaseClient";
-import { Task, TaskStatus } from "@/types";
+import { Task, TaskStatus } from "@/app/types";
 import { TaskCard } from "@/components/task-card";
 import { Plus, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";

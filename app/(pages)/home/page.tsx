@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { Task, TaskStatus, User } from "@/types";
+import { Profile, Task, TaskStatus } from "@/app/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   TaskStatusPie,
@@ -52,9 +52,15 @@ const HomePage = async () => {
     supabase.from("profiles").select("id, full_name, avatar_url"),
   ]);
 
+  const {
+    data: { user: currentUser },
+  } = await supabase.auth.getUser();
+
+  console.log("currentUser", currentUser);
+
   const tasks = (rawTasks ?? []) as Task[];
   const users = (rawUsers ?? []) as Pick<
-    User,
+    Profile,
     "id" | "full_name" | "avatar_url"
   >[];
 

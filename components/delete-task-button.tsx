@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { TaskDeleteDialog } from "@/components/task-delete-dialog";
-import { Task } from "@/types";
+import { Task } from "@/app/types";
 import { Trash2 } from "lucide-react";
 
 interface DeleteTaskButtonProps {

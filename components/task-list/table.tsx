@@ -1,6 +1,6 @@
 "use client";
 
-import { Task, TaskStatus, User } from "@/types";
+import { Task, TaskStatus, Profile } from "@/app/types";
 import {
   Select,
   SelectContent,
@@ -62,7 +62,7 @@ export function SortIcon({
 interface TaskTableProps {
   tasks: Task[];
   allCount: number;
-  users: Pick<User, "id" | "full_name" | "avatar_url">[];
+  users: Pick<Profile, "id" | "full_name" | "avatar_url">[];
   sortField: SortField;
   sortDir: SortDir;
   onToggleSort: (f: SortField) => void;
@@ -226,9 +226,11 @@ export function TaskTable({
                         {tag}
                       </Badge>
                     ))}
+                    {/* @ts-expect-error - attachments is JSONB array of { url: string, name: string } */}
                     {(task.attachments?.length ?? 0) > 0 && (
                       <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
                         <Paperclip className="h-2.5 w-2.5" />
+                        {/* @ts-expect-error - attachments is JSONB array of { url: string, name: string } */}
                         {task.attachments.length}
                       </span>
                     )}

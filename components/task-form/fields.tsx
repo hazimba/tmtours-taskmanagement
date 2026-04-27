@@ -3,7 +3,7 @@
 import { UseFormRegister, UseFormSetValue, Control } from "react-hook-form";
 import { useWatch } from "react-hook-form";
 import { TaskFormData } from "@/lib/validations/task";
-import { Task, TaskPriority, TaskStatus, User } from "@/types";
+import { Profile, Task, TaskPriority, TaskStatus } from "@/app/types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,7 +26,7 @@ interface TaskFieldsProps {
   control: Control<TaskFormData>;
   errors: Record<string, { message?: string } | undefined>;
   isEdit: boolean;
-  users: User[];
+  users: Profile[];
   allTasks: Task[];
 }
 

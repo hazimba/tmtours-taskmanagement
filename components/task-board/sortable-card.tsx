@@ -2,7 +2,7 @@
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Task } from "@/types";
+import { Task } from "@/app/types";
 import { TaskCard } from "@/components/task-card";
 import { cn } from "@/lib/utils";
 

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { User, UserDepartment, UserRole, UserStatus } from "@/types";
+import { Profile, UserDepartment, UserRole, UserStatus } from "@/app/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,7 +21,7 @@ import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
 
 interface Props {
-  profile: User;
+  profile: Profile;
 }
 
 export default function ProfileEditForm({ profile }: Props) {

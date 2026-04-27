@@ -11,12 +11,12 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { Task, TaskStatus, User } from "@/types";
+import { Task, TaskStatus, Profile } from "@/app/types";
 import { isOverdue, isDueSoon } from "@/components/shared/task-meta";
 
 interface OverdueBarProps {
   tasks: Task[];
-  users: Pick<User, "id" | "full_name">[];
+  users: Pick<Profile, "id" | "full_name">[];
 }
 
 export function OverdueBarChart({ tasks, users }: OverdueBarProps) {

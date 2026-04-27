@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { TaskAttachment } from "@/types";
+import { TaskAttachment } from "@/app/types";
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";

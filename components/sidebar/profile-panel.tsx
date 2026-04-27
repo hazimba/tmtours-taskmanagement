@@ -1,11 +1,11 @@
 "use client";
 
-import { User } from "@/types";
+import { Profile } from "@/app/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function ProfilePanel({ profile }: { profile: User | null }) {
+export function ProfilePanel({ profile }: { profile: Profile | null }) {
   if (!profile) return null;
 
   const fields: { label: string; value: string | null | undefined }[] = [

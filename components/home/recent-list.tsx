@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import { Task, TaskStatus, User } from "@/types";
+import { Task, TaskStatus, Profile } from "@/app/types";
 import { Badge } from "@/components/ui/badge";
 import { CalendarDays, AlertCircle, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -39,7 +39,7 @@ export function RecentTasksList({
   users,
 }: {
   tasks: Task[];
-  users: Pick<User, "id" | "full_name">[];
+  users: Pick<Profile, "id" | "full_name">[];
 }) {
   const weekAgo = useMemo(() => {
     const d = new Date();

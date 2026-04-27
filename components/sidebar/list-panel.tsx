@@ -1,6 +1,6 @@
 "use client";
 
-import { Task, TaskStatus, TaskPriority, User } from "@/types";
+import { Task, TaskPriority, TaskStatus } from "@/app/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertCircle, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";

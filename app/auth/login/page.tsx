@@ -6,7 +6,6 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { login } from "./action";
 import { redirect as nextRedirect } from "next/navigation";
-import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -32,7 +31,6 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 const LoginIn = () => {
-  const params = useParams();
   const [isLoading, setIsLoading] = useState(false);
   //   const { setLoggedInUser } = useUserStore();
 
@@ -52,20 +50,19 @@ const LoginIn = () => {
     formData.append("password", data.password);
     const res = await login(formData);
 
-    console.log("Login response:", res);
-
     if (res?.success) {
       const { data: userData } = await supabase
         .from("profiles")
-        .select("*")
+        .select("full_name")
         .eq("email", data.email)
         .single();
 
-      console.log("Logged in user data:", userData);
-
-      //   setLoggedInUser(userData);
-
-      nextRedirect("/home");
+      // First-time login — profile not yet completed
+      if (!userData?.full_name) {
+        nextRedirect("/auth/signup");
+      } else {
+        nextRedirect("/home");
+      }
     }
   };
 

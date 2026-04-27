@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Task, TaskPriority, TaskStatus } from "@/types";
+import { Task, TaskPriority, TaskStatus } from "@/app/types";
 import { Card } from "@/components/ui/card";
 import {
   CalendarDays,
@@ -99,9 +99,11 @@ export function TaskCard({ task }: TaskCardProps) {
   const priority = priorityConfig[task.priority];
   const status = statusConfig[task.status];
   const overdue =
-    isOverdue(task.due_date) && task.status !== TaskStatus.COMPLETED;
+    isOverdue(task.due_date ?? undefined) &&
+    task.status !== TaskStatus.COMPLETED;
   const dueSoon =
-    isDueSoon(task.due_date) && task.status !== TaskStatus.COMPLETED;
+    isDueSoon(task.due_date ?? undefined) &&
+    task.status !== TaskStatus.COMPLETED;
 
   return (
     <Link href={`/task/${task.id}`}>
@@ -151,9 +153,9 @@ export function TaskCard({ task }: TaskCardProps) {
         </div>
 
         {/* Tags */}
-        {task.tags.length > 0 && (
+        {(task.tags ?? []).length > 0 && (
           <div className="flex flex-wrap gap-1 px-0">
-            {task.tags.slice(0, 3).map((tag) => (
+            {(task.tags ?? []).slice(0, 3).map((tag) => (
               <span
                 key={tag}
                 className="text-[10px] bg-secondary text-secondary-foreground px-2 py-0.5 rounded-full font-medium"
@@ -161,9 +163,9 @@ export function TaskCard({ task }: TaskCardProps) {
                 {tag}
               </span>
             ))}
-            {task.tags.length > 3 && (
+            {(task.tags ?? []).length > 3 && (
               <span className="text-[10px] text-muted-foreground px-1">
-                +{task.tags.length - 3}
+                +{(task.tags ?? []).length - 3}
               </span>
             )}
           </div>
@@ -199,7 +201,7 @@ export function TaskCard({ task }: TaskCardProps) {
             )}
           </div>
 
-          {task.attachments?.length > 0 && (
+          {Array.isArray(task.attachments) && task.attachments.length > 0 && (
             <span className="flex items-center gap-1 text-xs text-muted-foreground">
               <Paperclip className="h-3 w-3" />
               {task.attachments.length}

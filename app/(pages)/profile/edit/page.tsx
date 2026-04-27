@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { User } from "@/types";
+import { Profile } from "@/app/types";
 import ProfileEditForm from "@/components/profile-edit-form";
 
 export default async function ProfileEditPage() {
@@ -15,7 +15,7 @@ export default async function ProfileEditPage() {
     .from("profiles")
     .select("*")
     .eq("id", user.id)
-    .single<User>();
+    .single<Profile>();
 
   if (error || !data) redirect("/profile");
 

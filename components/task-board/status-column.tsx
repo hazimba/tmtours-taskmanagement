@@ -5,7 +5,7 @@ import {
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Task, TaskStatus } from "@/types";
+import { Task, TaskStatus } from "@/app/types";
 import { STATUS_META } from "@/components/shared/task-meta";
 import { SortableTaskCard } from "./sortable-card";
 import { cn } from "@/lib/utils";

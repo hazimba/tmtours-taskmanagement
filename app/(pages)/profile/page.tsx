@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { User } from "@/types";
+import { Profile } from "@/app/types";
 
 const getInitials = (name: string | null | undefined) => {
   if (!name) return "?";
@@ -88,7 +88,7 @@ const ProfilePage = async () => {
     .from("profiles")
     .select("*")
     .eq("id", user.id)
-    .single<User>();
+    .single<Profile>();
 
   if (error || !data) {
     return (
