@@ -10,9 +10,9 @@ export async function updateSession(request: NextRequest) {
   // variable. Always create a new one on each request.
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL! ||
-      "https://mlapxffieyehdpvuzsyw.supabase.co",
+      "https://qkjejkhpcuoprfeurssd.supabase.co",
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY! ||
-      "sb_publishable_ZOmLKMqnmBsr9RgREljNkw_D9-H3i0x",
+      "sb_publishable_s9r4azwonS2k1jOaELcCNw_RDKMT8t8",
     {
       cookies: {
         getAll() {
