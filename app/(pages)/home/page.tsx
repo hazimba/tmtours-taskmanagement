@@ -7,6 +7,7 @@ import {
   OverdueBarChart,
 } from "@/components/home-charts";
 import { CheckCircle2, ListTodo, AlertCircle, Clock } from "lucide-react";
+import { getActiveCompanyId } from "@/lib/get-active-company";
 
 // ─── stat card ────────────────────────────────────────────────────────────────
 
@@ -43,20 +44,32 @@ function StatCard({
 const HomePage = async () => {
   const supabase = await createClient();
 
-  const [{ data: rawTasks }, { data: rawUsers }] = await Promise.all([
-    supabase
-      .from("tasks")
-      .select("*")
-      .eq("is_archived", false)
-      .order("created_at", { ascending: false }),
-    supabase.from("profiles").select("id, full_name, avatar_url"),
-  ]);
-
   const {
     data: { user: currentUser },
   } = await supabase.auth.getUser();
 
-  console.log("currentUser", currentUser);
+  const meta = currentUser?.user_metadata as Record<string, string> | undefined;
+  const activeCompanyId = await getActiveCompanyId(meta);
+
+  const tasksQuery = supabase
+    .from("tasks")
+    .select("*")
+    .eq("is_archived", false)
+    .order("created_at", { ascending: false });
+
+  const usersQuery = supabase
+    .from("profiles")
+    .select("id, full_name, avatar_url");
+
+  if (activeCompanyId) {
+    tasksQuery.eq("company_id", activeCompanyId);
+    usersQuery.eq("company_id", activeCompanyId);
+  }
+
+  const [{ data: rawTasks }, { data: rawUsers }] = await Promise.all([
+    tasksQuery,
+    usersQuery,
+  ]);
 
   const tasks = (rawTasks ?? []) as Task[];
   const users = (rawUsers ?? []) as Pick<
@@ -97,7 +110,7 @@ const HomePage = async () => {
   }).length;
 
   return (
-    <div className="space-y-6 pb-6">
+    <div className="space-y-6 pb-6 mx-1">
       {/* ── heading ── */}
       <div>
         <h1 className="text-xl font-bold tracking-widest">DASHBOARD</h1>

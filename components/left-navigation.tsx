@@ -3,26 +3,52 @@
 import { cn } from "@/lib/utils";
 import {
   Bell,
+  Building2,
   ChevronLeft,
   ChevronRight,
   Home,
   List,
   PanelRight,
-  Settings,
   User,
+  UserCog,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { SidebarPanel } from "./sidebar-panel";
+import { createClient } from "@/lib/supabase/client";
+import { Profile } from "@/app/types";
+import { CompanySelector } from "@/components/company-selector";
 
 interface LeftNavigationProps {
   children: React.ReactNode;
+  isSuperAdmin: boolean;
+  companies: { id: string; name: string }[];
+  activeCompanyId: string | null;
+  displayCompanyName: string | null;
 }
 
-const LeftNavigation = ({ children }: LeftNavigationProps) => {
+const LeftNavigation = ({
+  children,
+  isSuperAdmin,
+  companies,
+  activeCompanyId,
+  displayCompanyName,
+}: LeftNavigationProps) => {
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const mobileSidebarRef = useRef<HTMLDivElement>(null);
+  const [loggedIn, setLoggedIn] = useState<Profile | null>(null);
+
+  useEffect(() => {
+    async function load() {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      setLoggedIn(user?.user_metadata as Profile | null);
+    }
+    load();
+  }, []);
 
   const sidebarItems = [
     { href: "/home", label: "Home", icon: Home },
@@ -32,8 +58,18 @@ const LeftNavigation = ({ children }: LeftNavigationProps) => {
   ];
 
   const sidebarSettingItems = [
-    { href: "/settings/users", label: "Users", icon: User },
-    { href: "/settings/companies", label: "Companies", icon: User },
+    {
+      href: "/settings/users",
+      label: "Users",
+      icon: UserCog,
+      auth: ["ADMIN", "SUPERADMIN"],
+    },
+    {
+      href: "/settings/companies",
+      label: "Companies",
+      icon: Building2,
+      auth: ["SUPERADMIN"],
+    },
   ];
 
   const pathname = usePathname();
@@ -133,9 +169,12 @@ const LeftNavigation = ({ children }: LeftNavigationProps) => {
                 Settings
               </span>
             </div>
-            {sidebarSettingItems.map(({ href, label, icon: Icon }) => {
+            {sidebarSettingItems.map(({ href, label, icon: Icon, auth }) => {
               const isActive =
                 pathname === href || pathname.startsWith(href + "/");
+
+              const hasAuth = loggedIn && auth.includes(loggedIn.role);
+              if (!hasAuth) return null;
 
               return (
                 <Link
@@ -207,6 +246,18 @@ const LeftNavigation = ({ children }: LeftNavigationProps) => {
                 <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Info Panel
                 </span>
+              </div>
+              <div className="mb-6">
+                {isSuperAdmin ? (
+                  <CompanySelector
+                    companies={companies}
+                    selectedCompanyId={activeCompanyId}
+                  />
+                ) : (
+                  <div className="text-sm font-normal tracking-widest text-muted-foreground">
+                    {displayCompanyName ?? "No Company"}
+                  </div>
+                )}
               </div>
               <SidebarPanel />
             </div>

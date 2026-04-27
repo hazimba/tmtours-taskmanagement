@@ -90,7 +90,7 @@ export function TaskTable({
   return (
     <div className="rounded-xl border border-border overflow-hidden bg-white dark:bg-card">
       {/* Desktop column headers */}
-      <div className="hidden sm:grid sm:grid-cols-[1fr_160px_110px_140px_120px] bg-muted/50 border-b border-border px-4 py-2.5">
+      <div className="hidden md:grid md:grid-cols-[minmax(0,1.8fr)_minmax(90px,0.8fr)_minmax(70px,0.6fr)_minmax(90px,0.7fr)_minmax(90px,0.7fr)] bg-muted/50 border-b border-border px-4 py-2.5">
         {(
           [
             ["title", "Task"],
@@ -111,7 +111,7 @@ export function TaskTable({
       </div>
 
       {/* Mobile header */}
-      <div className="sm:hidden flex items-center justify-between bg-muted/50 border-b border-border px-4 py-2">
+      <div className="md:hidden flex items-center justify-between bg-muted/50 border-b border-border px-4 py-2">
         <span className="text-xs font-semibold text-muted-foreground">
           {allCount} tasks
         </span>
@@ -157,11 +157,13 @@ export function TaskTable({
               isOverdue(task.due_date) &&
               task.status !== TaskStatus.COMPLETED &&
               task.status !== TaskStatus.CANCELLED;
+
             const dueSoon =
               isDueSoonWithinWeek(task.due_date) &&
               !overdue &&
               task.status !== TaskStatus.COMPLETED &&
               task.status !== TaskStatus.CANCELLED;
+
             const statusMeta = STATUS_META[task.status];
             const priorityMeta = PRIORITY_META[task.priority];
             const assignee = users.find((u) => u.id === task.assigned_to);
@@ -175,99 +177,111 @@ export function TaskTable({
                   setLoadingId(task.id);
                   router.push(`/task/${task.id}`);
                 }}
-                className="flex sm:grid sm:grid-cols-[1fr_160px_110px_140px_120px_40px] px-4 py-3 hover:bg-muted/40 transition-colors items-center gap-3 sm:gap-0 group cursor-pointer"
+                className={cn(
+                  "relative grid grid-cols-[minmax(0,1fr)_auto] md:grid-cols-[minmax(0,1.8fr)_minmax(90px,0.8fr)_minmax(70px,0.6fr)_minmax(90px,0.7fr)_minmax(90px,0.7fr)]",
+                  "px-4 py-3 items-center gap-3 cursor-pointer group transition-colors hover:bg-muted/40",
+                  isLoading && "bg-muted/60 pointer-events-none"
+                )}
               >
-                {/* Title + sub-meta */}
-                <div className="flex-1 min-w-0 sm:pr-4">
-                  <div className="flex items-center gap-2 flex-wrap">
+                {isLoading && (
+                  <div className="absolute inset-0 z-10 flex items-center justify-center rounded-md bg-background/50 backdrop-blur-[1px]">
+                    <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                  </div>
+                )}
+
+                <div className="min-w-0 sm:pr-4">
+                  <div className="flex items-center gap-2 min-w-0">
                     <span
                       className={cn(
-                        "text-sm font-medium leading-snug line-clamp-1 group-hover:text-primary transition-colors",
+                        "min-w-0 flex-1 truncate text-sm font-medium leading-snug group-hover:text-primary transition-colors",
                         task.status === TaskStatus.COMPLETED &&
                           "line-through text-muted-foreground group-hover:text-muted-foreground"
                       )}
                     >
                       {task.title}
                     </span>
+
                     {overdue && (
                       <span className="shrink-0 flex items-center gap-0.5 text-[10px] font-semibold text-red-500">
                         <AlertCircle className="h-3 w-3" /> Overdue
                       </span>
                     )}
+
                     {dueSoon && (
                       <span className="shrink-0 text-[10px] font-semibold text-amber-500">
                         Due soon
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+
+                  <div className="mt-0.5 flex items-center gap-2 min-w-0 overflow-hidden">
                     {assignee ? (
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-6 w-6">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <Avatar className="h-6 w-6 shrink-0">
                           <AvatarImage src={assignee.avatar_url || ""} />
-                          <AvatarFallback className="rounded-full bg-primary/20 text-primary text-[9px] font-bold inline-flex items-center justify-center shrink-0">
+                          <AvatarFallback className="rounded-full bg-primary/20 text-primary text-[9px] font-bold">
                             {assignee.full_name?.charAt(0).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
-                        <span className="text-[11px] text-muted-foreground">
+
+                        <span className="truncate text-[11px] text-muted-foreground">
                           {assignee.full_name}
                         </span>
                       </div>
                     ) : (
-                      <span className="text-[11px] text-muted-foreground">
+                      <span className="shrink-0 text-[11px] text-muted-foreground">
                         Unassigned
                       </span>
                     )}
+
                     {task.tags?.slice(0, 2).map((tag) => (
                       <Badge
                         key={tag}
-                        className="text-[10px] bg-accent text-accent-foreground px-2 rounded-sm py-0.5 font-medium"
+                        className="shrink-0 max-w-24 truncate text-[10px] bg-accent text-accent-foreground px-2 rounded-sm py-0.5 font-medium"
                       >
                         {tag}
                       </Badge>
                     ))}
-                    {/* @ts-expect-error - attachments is JSONB array of { url: string, name: string } */}
+
+                    {/* @ts-expect-error - attachments is JSONB array */}
                     {(task.attachments?.length ?? 0) > 0 && (
-                      <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                      <span className="shrink-0 text-[10px] text-muted-foreground flex items-center gap-0.5">
                         <Paperclip className="h-2.5 w-2.5" />
-                        {/* @ts-expect-error - attachments is JSONB array of { url: string, name: string } */}
+                        {/* @ts-expect-error - attachments is JSONB array */}
                         {task.attachments.length}
                       </span>
                     )}
                   </div>
                 </div>
 
-                {/* Status — desktop */}
-                <div className="hidden sm:flex items-center">
+                <div className="hidden md:flex min-w-0 items-center">
                   <span
                     className={cn(
-                      "flex items-center gap-1.5 text-xs font-medium whitespace-nowrap",
+                      "min-w-0 truncate text-xs font-medium",
                       statusMeta.color
                     )}
                   >
-                    {statusMeta.icon}
                     {statusMeta.label}
                   </span>
                 </div>
 
-                {/* Priority — desktop */}
-                <div className="hidden sm:flex items-center">
+                <div className="hidden md:flex min-w-0 items-center">
                   <Badge
                     className={cn(
-                      "text-xs font-semibold px-2 py-0.5 rounded-sm whitespace-nowrap",
+                      "min-w-0 max-w-full truncate text-xs font-semibold px-2 py-0.5 rounded-sm",
                       priorityMeta.className
                     )}
                   >
-                    {priorityMeta.label}
+                    <span className="block truncate">{priorityMeta.label}</span>
                   </Badge>
                 </div>
 
-                {/* Due date — desktop */}
-                <div className="hidden sm:flex items-center">
+                {/* Due date */}
+                <div className="hidden md:flex min-w-0 items-center">
                   {task.due_date ? (
                     <span
                       className={cn(
-                        "flex items-center gap-1 text-xs font-medium whitespace-nowrap",
+                        "min-w-0 truncate text-xs font-medium",
                         overdue
                           ? "text-red-500"
                           : dueSoon
@@ -275,37 +289,30 @@ export function TaskTable({
                           : "text-muted-foreground"
                       )}
                     >
-                      <CalendarDays className="h-3 w-3" />
                       {formatDate(task.due_date)}
                     </span>
                   ) : (
-                    <span className="text-xs text-muted-foreground/40">—</span>
+                    <span className="truncate text-xs text-muted-foreground/40">
+                      —
+                    </span>
                   )}
                 </div>
 
-                {/* Created at — desktop */}
-                <div className="hidden sm:flex items-center">
-                  <span className="text-xs text-muted-foreground whitespace-nowrap">
+                {/* Created at */}
+                <div className="hidden md:flex min-w-0 items-center">
+                  <span className="min-w-0 truncate text-xs text-muted-foreground">
                     {formatDate(task.created_at)}
                   </span>
                 </div>
 
-                {/* Mobile: status icon */}
                 <span
                   className={cn(
-                    "flex sm:hidden items-center shrink-0",
+                    "flex md:hidden items-center justify-end shrink-0",
                     statusMeta.color
                   )}
                 >
                   {statusMeta.icon}
                 </span>
-
-                {/* Loading spinner */}
-                <div className="flex items-center justify-end">
-                  {isLoading && (
-                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                  )}
-                </div>
               </div>
             );
           })}

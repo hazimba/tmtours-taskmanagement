@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { STATUS_META } from "@/components/shared/task-meta";
 import { StatusColumn } from "./status-column";
+import { useCompanyStore } from "@/lib/stores/company-store";
 
 export const STATUS_ORDER: TaskStatus[] = [
   TaskStatus.TODO,
@@ -38,6 +39,8 @@ export function TaskBoard({ initialTasks }: TaskBoardProps) {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [overStatus, setOverStatus] = useState<TaskStatus | null>(null);
+
+  const triggerTaskRefresh = useCompanyStore((s) => s.triggerTaskRefresh);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
@@ -113,6 +116,7 @@ export function TaskBoard({ initialTasks }: TaskBoardProps) {
       toast.success(`Moved to "${STATUS_META[targetStatus].label}"`, {
         duration: 2000,
       });
+      triggerTaskRefresh();
     }
   }
 

@@ -19,7 +19,8 @@ interface ListPanelProps {
 export function ListPanel({ tasks, currentUserId }: ListPanelProps) {
   const myTasks = currentUserId
     ? tasks.filter(
-        (t) => t.assigned_to === currentUserId || t.created_by === currentUserId
+        (t) => t.assigned_to === currentUserId
+        // || t.created_by === currentUserId
       )
     : [];
 

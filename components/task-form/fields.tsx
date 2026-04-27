@@ -63,7 +63,7 @@ export function TaskFields({
   }
 
   return (
-    <>
+    <div className="mx-1 space-y-6">
       {/* Basic Info */}
       <Card className="px-5 py-5 space-y-4">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -286,6 +286,6 @@ export function TaskFields({
           </div>
         </Card>
       </div>
-    </>
+    </div>
   );
 }

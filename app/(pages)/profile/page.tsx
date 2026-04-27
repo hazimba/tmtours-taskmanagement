@@ -118,7 +118,7 @@ const ProfilePage = async () => {
 
   return (
     <div className="mx-auto w-full max-w-3xl">
-      <div className="relative overflow-hidden rounded-2xl ring-1 ring-foreground/10">
+      <div className="relative overflow-hidden rounded-2xl ring-1 ring-foreground/10 mx-1">
         <div className="h-32 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 sm:h-40" />
 
         <div className="bg-card px-5 pb-6 sm:px-8">
@@ -194,7 +194,7 @@ const ProfilePage = async () => {
         </div>
       </div>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 mx-1">
         <Card>
           <CardHeader>
             <CardTitle>Contact</CardTitle>

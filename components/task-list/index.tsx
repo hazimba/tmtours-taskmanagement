@@ -14,7 +14,7 @@ import { TaskFilters } from "./filters";
 import { TaskTable, SortField, SortDir } from "./table";
 import { Pagination } from "./pagination";
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 7;
 
 interface TaskListViewProps {
   initialTasks: Task[];
@@ -27,13 +27,10 @@ export function TaskListView({
   users,
   currentUser,
 }: TaskListViewProps) {
-  console.log("initialTasks", initialTasks);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterPriority, setFilterPriority] = useState("all");
-  const [filterAssignee, setFilterAssignee] = useState(
-    currentUser ? currentUser.id : "all"
-  );
+  const [filterAssignee, setFilterAssignee] = useState("all");
   const [filterDue, setFilterDue] = useState("all");
   const [filterParentOnly, setFilterParentOnly] = useState(false);
   const [filterHasSubtasks, setFilterHasSubtasks] = useState(false);
