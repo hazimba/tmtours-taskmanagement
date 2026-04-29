@@ -58,9 +58,20 @@ export default function ProfileEditForm({ profile }: Props) {
       })
       .eq("id", profile.id);
 
+    await fetch("/api/users/update-metadata", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        userId: profile.id,
+        full_name: form.full_name,
+      }),
+    });
+
     setSaving(false);
     if (error) {
-      toast.error("Failed to save: " + error.message);
+      toast.error("Failed to save: " + error?.message);
     } else {
       toast.success("Profile updated");
       router.push("/profile");

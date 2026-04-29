@@ -75,6 +75,9 @@ const PageLayout = async ({ children }: { children: React.ReactNode }) => {
           </Link>
 
           <div className="flex items-center gap-2">
+            <>Hi {user?.user_metadata?.full_name}</>
+            <div className="h-6 w-[1.5px] bg-border mx-1" />
+
             <ModeToggle />
 
             <div className="h-6 w-[1px] bg-border mx-1" />

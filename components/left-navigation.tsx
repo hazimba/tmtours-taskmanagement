@@ -159,10 +159,12 @@ const LeftNavigation = ({
               );
             })}
           </nav>
-          <nav className="flex-1 p-3 space-y-2 overflow-y-auto pt-6">
+          <nav className="flex-1 p-3 space-y-2 overflow-hidden pt-6">
             <div className="px-3 pb-6 pt-2 h-6 flex items-center">
               <span
                 className={`text-xs font-semibold text-muted-foreground uppercase tracking-wider transition-all duration-200 ${
+                  loggedIn?.role === "USER" ? "hidden" : ""
+                } ${
                   isCollapsed ? "opacity-0 scale-95" : "opacity-100 scale-100"
                 }`}
               >

@@ -28,9 +28,9 @@ export function TaskListView({
   currentUser,
 }: TaskListViewProps) {
   const [search, setSearch] = useState("");
-  const [filterStatus, setFilterStatus] = useState("all");
-  const [filterPriority, setFilterPriority] = useState("all");
-  const [filterAssignee, setFilterAssignee] = useState("all");
+  const [filterStatus, setFilterStatus] = useState<string[]>([]);
+  const [filterPriority, setFilterPriority] = useState<string[]>([]);
+  const [filterAssignee, setFilterAssignee] = useState<string[]>([]);
   const [filterDue, setFilterDue] = useState("all");
   const [filterParentOnly, setFilterParentOnly] = useState(false);
   const [filterHasSubtasks, setFilterHasSubtasks] = useState(false);
@@ -61,14 +61,19 @@ export function TaskListView({
           t.tags?.some((tag) => tag.toLowerCase().includes(q))
       );
     }
-    if (filterStatus !== "all")
-      list = list.filter((t) => t.status === filterStatus);
-    if (filterPriority !== "all")
-      list = list.filter((t) => t.priority === filterPriority);
-    if (filterAssignee === "unassigned")
-      list = list.filter((t) => !t.assigned_to);
-    else if (filterAssignee !== "all")
-      list = list.filter((t) => t.assigned_to === filterAssignee);
+    if (filterStatus.length > 0)
+      list = list.filter((t) => filterStatus.includes(t.status));
+    if (filterPriority.length > 0)
+      list = list.filter((t) => filterPriority.includes(t.priority));
+    if (filterAssignee.length > 0) {
+      const hasUnassigned = filterAssignee.includes("unassigned");
+      const ids = filterAssignee.filter((v) => v !== "unassigned");
+      list = list.filter(
+        (t) =>
+          (hasUnassigned && !t.assigned_to) ||
+          (ids.length > 0 && !!t.assigned_to && ids.includes(t.assigned_to))
+      );
+    }
 
     if (filterDue === "overdue") {
       list = list.filter(
@@ -133,17 +138,18 @@ export function TaskListView({
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const activeFilterCount = [
-    filterPriority !== "all",
-    filterAssignee !== "all",
+    filterStatus.length > 0,
+    filterPriority.length > 0,
+    filterAssignee.length > 0,
     filterDue !== "all",
     filterParentOnly,
     filterHasSubtasks,
   ].filter(Boolean).length;
 
   function clearFilters() {
-    setFilterStatus("all");
-    setFilterPriority("all");
-    setFilterAssignee("all");
+    setFilterStatus([]);
+    setFilterPriority([]);
+    setFilterAssignee([]);
     setFilterDue("all");
     setFilterParentOnly(false);
     setFilterHasSubtasks(false);

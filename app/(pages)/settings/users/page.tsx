@@ -56,8 +56,6 @@ const UsersPage = () => {
   const [companyChecking, setCompanyChecking] = useState(false);
   const [companyFound, setCompanyFound] = useState<boolean | null>(null);
 
-  console.log("users", users);
-
   useEffect(() => {
     const fetchLoggedInUser = async () => {
       const {
@@ -229,7 +227,7 @@ const UsersPage = () => {
               className="grid gap-4 pt-4 md:grid-cols-2"
             >
               {/* Email */}
-              <div className="space-y-2">
+              <div className="space-y-2 px-1">
                 <label className="text-sm font-medium">Email Address</label>
                 <Input
                   {...register("email")}
@@ -273,7 +271,7 @@ const UsersPage = () => {
               </div>
 
               {/* Company Code */}
-              <div className="space-y-2">
+              <div className="space-y-2 px-1">
                 <label className="text-sm font-medium">Company Code</label>
                 <Input
                   {...register("company_code")}

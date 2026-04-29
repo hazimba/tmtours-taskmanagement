@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { CalendarDays, AlertCircle, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { isOverdue, isDueSoon } from "@/components/shared/task-meta";
+import type { FilterOption } from "@/app/(pages)/home/RecentTasksFilterCard";
 
 const STATUS_LABEL: Record<string, string> = {
   TODO: "To Do",
@@ -37,9 +38,11 @@ function fmtDate(d: string) {
 export function RecentTasksList({
   tasks,
   users,
+  selectedDays,
 }: {
   tasks: Task[];
   users: Pick<Profile, "id" | "full_name">[];
+  selectedDays: FilterOption | null;
 }) {
   const weekAgo = useMemo(() => {
     const d = new Date();
@@ -62,7 +65,7 @@ export function RecentTasksList({
   if (recent.length === 0)
     return (
       <p className="text-sm text-muted-foreground text-center py-8">
-        No tasks created this week.
+        No tasks created {selectedDays?.desc.toLocaleLowerCase()}.
       </p>
     );
 

@@ -155,6 +155,8 @@ export default async function TaskDetailPage({
     data: { user: currentUser },
   } = await supabaseServer.auth.getUser();
 
+  console.log("currentUser", currentUser);
+
   const { data: task, error } = await supabaseServer
     .from("tasks")
     .select("*")
@@ -171,6 +173,8 @@ export default async function TaskDetailPage({
     typedTask.status !== TaskStatus.COMPLETED &&
     typedTask.status !== TaskStatus.CANCELLED;
   const isOwner = currentUser?.id === typedTask.created_by;
+  const isAdmin = currentUser?.user_metadata?.role === "ADMIN";
+  const canEdit = isOwner || isAdmin;
 
   const [assignedUserRes, createdByUserRes, parentTaskRes, subtasksRes] =
     await Promise.all([
@@ -218,7 +222,7 @@ export default async function TaskDetailPage({
                 <span className="">Back</span>
               </Button>
             </Link>
-            {isOwner && (
+            {canEdit && (
               <div className="flex items-center gap-2">
                 <Link href={`/task/${id}/edit`}>
                   <Button size="sm" variant="outline">
