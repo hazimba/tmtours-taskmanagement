@@ -121,10 +121,10 @@ const CompaniesPage = () => {
             </div>
           </AccordionTrigger>
 
-          <AccordionContent>
+          <AccordionContent className="h-full">
             <form
               onSubmit={handleSubmit(onSubmit)}
-              className="grid gap-4 pt-4 md:grid-cols-2"
+              className="grid gap-4 pt-4 md:grid-cols-2 px-1"
             >
               <div className="space-y-2">
                 <label className="text-sm font-medium">Company Name</label>

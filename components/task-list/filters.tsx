@@ -1,31 +1,27 @@
 "use client";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Profile, TaskPriority, TaskStatus } from "@/app/types";
+import { PRIORITY_META, STATUS_META } from "@/components/shared/task-meta";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Search, X } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { TaskStatus, TaskPriority, Profile } from "@/app/types";
-import { STATUS_META, PRIORITY_META } from "@/components/shared/task-meta";
-
-type SortField = "created_at" | "due_date" | "priority" | "title" | "status";
+import { Check, ChevronDown, Search, X } from "lucide-react";
 
 interface TaskFiltersProps {
   search: string;
   onSearchChange: (v: string) => void;
-  filterStatus: string;
-  onFilterStatus: (v: string) => void;
-  filterPriority: string;
-  onFilterPriority: (v: string) => void;
-  filterAssignee: string;
-  onFilterAssignee: (v: string) => void;
+  filterStatus: string[];
+  onFilterStatus: (v: string[]) => void;
+  filterPriority: string[];
+  onFilterPriority: (v: string[]) => void;
+  filterAssignee: string[];
+  onFilterAssignee: (v: string[]) => void;
   filterDue: string;
   onFilterDue: (v: string) => void;
   filterParentOnly: boolean;
@@ -35,6 +31,10 @@ interface TaskFiltersProps {
   users: Pick<Profile, "id" | "full_name">[];
   activeFilterCount: number;
   onClearFilters: () => void;
+}
+
+function toggle(arr: string[], value: string): string[] {
+  return arr.includes(value) ? arr.filter((v) => v !== value) : [...arr, value];
 }
 
 export function TaskFilters({
@@ -95,152 +95,322 @@ export function TaskFilters({
           )}
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {/* Status */}
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Status
-            </label>
-            <Select value={filterStatus} onValueChange={onFilterStatus}>
-              <SelectTrigger className="h-8 text-xs w-full">
-                <SelectValue placeholder="All statuses" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All statuses</SelectItem>
-                {Object.entries(STATUS_META).map(([v, m]) => (
-                  <SelectItem key={v} value={v}>
-                    <span className={cn("flex items-center gap-1.5", m.color)}>
-                      {m.icon} {m.label}
+        {/* Status — multi-select dropdown */}
+        <div className="space-y-3">
+          {/* Row: Status, Assignee, Due Date */}
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+            {/* Status */}
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Status
+              </label>
+
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className={cn(
+                      "flex h-8 w-full items-center justify-between rounded-md border px-3 text-xs hover:cursor-pointer",
+                      filterStatus.length > 0
+                        ? "border-primary/30 bg-primary/10 text-primary"
+                        : "bg-background text-muted-foreground hover:bg-muted"
+                    )}
+                  >
+                    <span>
+                      {filterStatus.length > 0
+                        ? `${filterStatus.length} selected`
+                        : "All statuses"}
                     </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                    <ChevronDown className="h-3 w-3 opacity-60" />
+                  </button>
+                </PopoverTrigger>
+
+                <PopoverContent className="w-48 p-1.5 z-[10000]" align="start">
+                  {Object.entries(STATUS_META).map(([v, m]) => {
+                    const active = filterStatus.includes(v);
+
+                    return (
+                      <button
+                        key={v}
+                        type="button"
+                        onClick={() => onFilterStatus(toggle(filterStatus, v))}
+                        className={cn(
+                          "flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-xs",
+                          active
+                            ? "bg-muted font-medium"
+                            : "text-muted-foreground hover:bg-muted/60"
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "flex flex-1 items-center gap-1.5",
+                            m.color
+                          )}
+                        >
+                          {m.icon}
+                          {m.label}
+                        </span>
+                        {active && <Check className="h-3 w-3 text-primary" />}
+                      </button>
+                    );
+                  })}
+
+                  {filterStatus.length > 0 && (
+                    <>
+                      <div className="my-1 border-t" />
+                      <button
+                        type="button"
+                        onClick={() => onFilterStatus([])}
+                        className="flex w-full items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs text-muted-foreground hover:bg-muted/60"
+                      >
+                        <X className="h-3 w-3" />
+                        Clear
+                      </button>
+                    </>
+                  )}
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            {/* Assignee */}
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Assignee
+              </label>
+
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className={cn(
+                      "flex h-8 w-full items-center justify-between rounded-md border px-3 text-xs hover:cursor-pointer",
+                      filterAssignee.length > 0
+                        ? "border-primary/30 bg-primary/10 text-primary"
+                        : "bg-background text-muted-foreground hover:bg-muted"
+                    )}
+                  >
+                    <span>
+                      {filterAssignee.length > 0
+                        ? `${filterAssignee.length} selected`
+                        : "All assignees"}
+                    </span>
+                    <ChevronDown className="h-3 w-3 opacity-60" />
+                  </button>
+                </PopoverTrigger>
+
+                <PopoverContent className="w-52 p-1.5 z-[10000]" align="start">
+                  {[
+                    { id: "unassigned", full_name: "Unassigned" },
+                    ...users,
+                  ].map((u) => {
+                    const active = filterAssignee.includes(u.id);
+
+                    return (
+                      <button
+                        key={u.id}
+                        type="button"
+                        onClick={() =>
+                          onFilterAssignee(toggle(filterAssignee, u.id))
+                        }
+                        className={cn(
+                          "flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-xs",
+                          active
+                            ? "bg-muted font-medium"
+                            : "text-muted-foreground hover:bg-muted/60"
+                        )}
+                      >
+                        <span className="flex-1 truncate text-left">
+                          {u.full_name ?? "Unknown"}
+                        </span>
+                        {active && <Check className="h-3 w-3 text-primary" />}
+                      </button>
+                    );
+                  })}
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            {/* Due Date */}
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Due Date
+              </label>
+
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className={cn(
+                      "flex h-8 w-full items-center justify-between rounded-md border px-3 text-xs hover:cursor-pointer",
+                      filterDue !== "all"
+                        ? "border-primary/30 bg-primary/10 text-primary"
+                        : "bg-background text-muted-foreground hover:bg-muted"
+                    )}
+                  >
+                    <span>
+                      {filterDue === "all" && "Any due date"}
+                      {filterDue === "overdue" && "Overdue"}
+                      {filterDue === "this_week" && "Due within 1 week"}
+                      {filterDue === "no_date" && "No due date"}
+                    </span>
+
+                    <ChevronDown className="h-3 w-3 opacity-60" />
+                  </button>
+                </PopoverTrigger>
+
+                <PopoverContent className="w-48 p-1.5 z-[10000]" align="start">
+                  {[
+                    { value: "all", label: "Any due date" },
+                    { value: "overdue", label: "Overdue" },
+                    { value: "this_week", label: "Due within 1 week" },
+                    { value: "no_date", label: "No due date" },
+                  ].map((item) => {
+                    const active = filterDue === item.value;
+
+                    return (
+                      <button
+                        key={item.value}
+                        type="button"
+                        onClick={() => onFilterDue(item.value)}
+                        className={cn(
+                          "flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-xs",
+                          active
+                            ? "bg-muted font-medium"
+                            : "text-muted-foreground hover:bg-muted/60"
+                        )}
+                      >
+                        <span>{item.label}</span>
+                        {active && <Check className="h-3 w-3 text-primary" />}
+                      </button>
+                    );
+                  })}
+                </PopoverContent>
+              </Popover>
+            </div>
           </div>
 
-          {/* Priority */}
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Priority
-            </label>
-            <Select value={filterPriority} onValueChange={onFilterPriority}>
-              <SelectTrigger className="h-8 text-xs w-full">
-                <SelectValue placeholder="All priorities" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All priorities</SelectItem>
-                {Object.entries(PRIORITY_META).map(([v, m]) => (
-                  <SelectItem key={v} value={v}>
-                    {m.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Priority — smaller */}
+          <div className="flex flex-col md:flex-col flex-1 gap-3 ">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Priority
+              </label>
 
-          {/* Assignee */}
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Assignee
-            </label>
-            <Select value={filterAssignee} onValueChange={onFilterAssignee}>
-              <SelectTrigger className="h-8 text-xs w-full">
-                <SelectValue placeholder="All assignees" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All assignees</SelectItem>
-                <SelectItem value="unassigned">Unassigned</SelectItem>
-                {users.map((u) => (
-                  <SelectItem key={u.id} value={u.id}>
-                    {u.full_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+              <div className="flex flex-wrap gap-3">
+                {Object.entries(PRIORITY_META).map(([v, m]) => {
+                  const active = filterPriority.includes(v);
 
-          {/* Due Date */}
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Due Date
-            </label>
-            <Select value={filterDue} onValueChange={onFilterDue}>
-              <SelectTrigger className="h-8 text-xs w-full">
-                <SelectValue placeholder="Any due date" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Any due date</SelectItem>
-                <SelectItem value="overdue">Overdue</SelectItem>
-                <SelectItem value="this_week">Due within 1 week</SelectItem>
-                <SelectItem value="no_date">No due date</SelectItem>
-              </SelectContent>
-            </Select>
+                  return (
+                    <button
+                      key={v}
+                      type="button"
+                      onClick={() =>
+                        onFilterPriority(toggle(filterPriority, v))
+                      }
+                      className={cn(
+                        "flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[10px] font-medium transition-all hover:cursor-pointer",
+                        active
+                          ? `${m.className} border-transparent`
+                          : "border-border bg-background text-muted-foreground hover:bg-muted"
+                      )}
+                    >
+                      {m.icon}
+                      {m.label}
+                      {active && <X className="h-2.5 w-2.5" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Task Type
+              </label>
+
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={() => onFilterParentOnly(!filterParentOnly)}
+                  className={cn(
+                    "flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[10px] font-medium transition-all hover:cursor-pointer",
+                    filterParentOnly
+                      ? "border-transparent bg-primary text-primary-foreground"
+                      : "border-border bg-background text-muted-foreground hover:bg-muted"
+                  )}
+                >
+                  Main tasks only
+                  {filterParentOnly && <X className="h-2.5 w-2.5" />}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => onFilterHasSubtasks(!filterHasSubtasks)}
+                  className={cn(
+                    "flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[10px] font-medium transition-all hover:cursor-pointer",
+                    filterHasSubtasks
+                      ? "border-transparent bg-primary text-primary-foreground"
+                      : "border-border bg-background text-muted-foreground hover:bg-muted"
+                  )}
+                >
+                  Has subtasks
+                  {filterHasSubtasks && <X className="h-2.5 w-2.5" />}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Subtask toggles */}
-        <div className="flex flex-wrap gap-4 pt-1">
-          <label className="flex items-center gap-2 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={filterParentOnly}
-              onChange={(e) => onFilterParentOnly(e.target.checked)}
-              className="h-4 w-4 rounded border-border accent-primary"
-            />
-            <span className="text-xs font-medium text-foreground">
-              Main tasks only
-            </span>
-            <span className="text-[10px] text-muted-foreground">
-              (no parent)
-            </span>
-          </label>
-          <label className="flex items-center gap-2 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={filterHasSubtasks}
-              onChange={(e) => onFilterHasSubtasks(e.target.checked)}
-              className="h-4 w-4 rounded border-border accent-primary"
-            />
-            <span className="text-xs font-medium text-foreground">
-              Has subtasks
-            </span>
-            <span className="text-[10px] text-muted-foreground">
-              (parent tasks only)
-            </span>
-          </label>
-        </div>
       </div>
 
-      {/* Active filter badges (shown when panel is closed — kept for future use) */}
+      {/* Active filter summary badges */}
       {activeFilterCount > 0 && (
-        <div className="hidden flex-wrap gap-2 items-center">
+        <div className="flex flex-wrap gap-2 items-center">
           <span className="text-xs text-muted-foreground">Filtered by:</span>
-          {filterStatus !== "all" && (
-            <Badge variant="secondary" className="gap-1 text-xs">
-              {STATUS_META[filterStatus as TaskStatus]?.label}
-              <button onClick={() => onFilterStatus("all")}>
+          {filterStatus.map((s) => (
+            <Badge key={s} className="gap-1 text-xs">
+              <span className={cn("flex items-center gap-1")}>
+                {STATUS_META[s as TaskStatus]?.icon}
+                {STATUS_META[s as TaskStatus]?.label}
+              </span>
+              <button
+                onClick={() =>
+                  onFilterStatus(filterStatus.filter((v) => v !== s))
+                }
+              >
                 <X className="h-3 w-3" />
               </button>
             </Badge>
-          )}
-          {filterPriority !== "all" && (
-            <Badge variant="secondary" className="gap-1 text-xs">
-              {PRIORITY_META[filterPriority as TaskPriority]?.label}
-              <button onClick={() => onFilterPriority("all")}>
+          ))}
+          {filterPriority.map((p) => (
+            <Badge key={p} variant="secondary" className="gap-1 text-xs">
+              <span className={cn("flex items-center gap-1")}>
+                {PRIORITY_META[p as TaskPriority]?.icon}
+                {PRIORITY_META[p as TaskPriority]?.label}
+              </span>
+              <button
+                onClick={() =>
+                  onFilterPriority(filterPriority.filter((v) => v !== p))
+                }
+              >
                 <X className="h-3 w-3" />
               </button>
             </Badge>
-          )}
-          {filterAssignee !== "all" && (
-            <Badge variant="secondary" className="gap-1 text-xs">
-              {filterAssignee === "unassigned"
+          ))}
+          {filterAssignee.map((a) => (
+            <Badge key={a} variant="secondary" className="gap-1 text-xs">
+              {a === "unassigned"
                 ? "Unassigned"
-                : users.find((u) => u.id === filterAssignee)?.full_name}
-              <button onClick={() => onFilterAssignee("all")}>
+                : users.find((u) => u.id === a)?.full_name ?? a}
+              <button
+                onClick={() =>
+                  onFilterAssignee(filterAssignee.filter((v) => v !== a))
+                }
+              >
                 <X className="h-3 w-3" />
               </button>
             </Badge>
-          )}
+          ))}
           {filterDue !== "all" && (
             <Badge variant="secondary" className="gap-1 text-xs">
               {filterDue === "overdue"

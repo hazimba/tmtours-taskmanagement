@@ -1,43 +1,11 @@
-import { createClient } from "@/lib/supabase/server";
 import { Profile, Task, TaskStatus } from "@/app/types";
+import { OverdueBarChart, TaskStatusPie } from "@/components/home-charts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  TaskStatusPie,
-  RecentTasksList,
-  OverdueBarChart,
-} from "@/components/home-charts";
-import { CheckCircle2, ListTodo, AlertCircle, Clock } from "lucide-react";
 import { getActiveCompanyId } from "@/lib/get-active-company";
-
-// ─── stat card ────────────────────────────────────────────────────────────────
-
-function StatCard({
-  label,
-  value,
-  icon: Icon,
-  color,
-}: {
-  label: string;
-  value: number;
-  icon: React.ComponentType<{ className?: string }>;
-  color: string;
-}) {
-  return (
-    <Card>
-      <CardContent className="p-4 flex items-center gap-4">
-        <div
-          className={`flex size-10 shrink-0 items-center justify-center rounded-xl ${color}`}
-        >
-          <Icon className="size-5" />
-        </div>
-        <div>
-          <p className="text-2xl font-bold leading-none">{value}</p>
-          <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+import { createClient } from "@/lib/supabase/server";
+import { AlertCircle, CheckCircle2, Clock, ListTodo } from "lucide-react";
+import { RecentTasksFilterCard } from "./RecentTasksFilterCard";
+import StatCardStatModal from "./StatCardStatModal";
 
 // ─── page ─────────────────────────────────────────────────────────────────────
 
@@ -47,6 +15,8 @@ const HomePage = async () => {
   const {
     data: { user: currentUser },
   } = await supabase.auth.getUser();
+
+  console.log("currentUser:", currentUser);
 
   const meta = currentUser?.user_metadata as Record<string, string> | undefined;
   const activeCompanyId = await getActiveCompanyId(meta);
@@ -80,24 +50,73 @@ const HomePage = async () => {
   const now = new Date();
   const nowMs = now.getTime();
 
+  const isActiveTask = (t: Task) =>
+    t.status !== TaskStatus.COMPLETED && t.status !== TaskStatus.CANCELLED;
+
+  const startOfWeek = (date: Date) => {
+    const d = new Date(date);
+    const day = d.getDay(); // Sunday = 0
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Monday start
+    d.setDate(diff);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  };
+
+  const endOfWeek = (date: Date) => {
+    const d = startOfWeek(date);
+    d.setDate(d.getDate() + 6);
+    d.setHours(23, 59, 59, 999);
+    return d;
+  };
+
+  const isDueBetween = (task: Task, start: Date, end: Date) => {
+    if (!task.due_date) return false;
+    const due = new Date(task.due_date);
+    return due >= start && due <= end;
+  };
+
+  const thisWeekStart = startOfWeek(now);
+  const thisWeekEnd = endOfWeek(now);
+
+  const nextWeekStart = new Date(thisWeekStart);
+  nextWeekStart.setDate(nextWeekStart.getDate() + 7);
+
+  const nextWeekEnd = new Date(thisWeekEnd);
+  nextWeekEnd.setDate(nextWeekEnd.getDate() + 7);
+
+  const activeTasks = tasks.filter(isActiveTask);
+
+  const thisWeekTasks = activeTasks.filter((t) =>
+    isDueBetween(t, thisWeekStart, thisWeekEnd)
+  );
+
+  const nextWeekTasks = activeTasks.filter((t) =>
+    isDueBetween(t, nextWeekStart, nextWeekEnd)
+  );
+
+  const toTaskItem = (t: Task) => ({
+    id: t.id,
+    title: t.title,
+    due_date: t.due_date ?? undefined,
+    assigned_to: users.find((u) => u.id === t.assigned_to),
+  });
+
   const totalActive = tasks.filter(
     (t) =>
       t.status !== TaskStatus.COMPLETED && t.status !== TaskStatus.CANCELLED
-  ).length;
+  );
 
-  const totalCompleted = tasks.filter(
-    (t) => t.status === TaskStatus.COMPLETED
-  ).length;
+  const completedTasks = tasks.filter((t) => t.status === TaskStatus.COMPLETED);
 
-  const totalOverdue = tasks.filter(
+  const overdueTasks = tasks.filter(
     (t) =>
       t.due_date &&
       new Date(t.due_date) < now &&
       t.status !== TaskStatus.COMPLETED &&
       t.status !== TaskStatus.CANCELLED
-  ).length;
+  );
 
-  const totalDueSoon = tasks.filter((t) => {
+  const dueSoonTasks = tasks.filter((t) => {
     if (!t.due_date) return false;
     const diff =
       (new Date(t.due_date).getTime() - nowMs) / (1000 * 60 * 60 * 24);
@@ -107,7 +126,11 @@ const HomePage = async () => {
       t.status !== TaskStatus.COMPLETED &&
       t.status !== TaskStatus.CANCELLED
     );
-  }).length;
+  });
+
+  const totalCompleted = completedTasks.length;
+  const totalOverdue = overdueTasks.length;
+  const totalDueSoon = dueSoonTasks.length;
 
   return (
     <div className="space-y-6 pb-6 mx-1">
@@ -118,32 +141,82 @@ const HomePage = async () => {
           Overview of all tasks
         </p>
       </div>
-
-      {/* ── stat cards ── */}
+      <div className="text-sm text-muted-foreground">Your Tasks</div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <StatCard
+        <StatCardStatModal
           label="Active Tasks"
-          value={totalActive}
-          icon={ListTodo}
-          color="bg-primary/10 text-primary"
+          value={
+            totalActive.filter((t) => t.assigned_to === currentUser?.id).length
+          }
+          data={[
+            {
+              label: "Task List This Week",
+              items: thisWeekTasks
+                .map(toTaskItem)
+                .filter((t) => t.assigned_to?.id === currentUser?.id),
+            },
+            {
+              label: "Task List Next Week",
+              items: nextWeekTasks
+                .map(toTaskItem)
+                .filter((t) => t.assigned_to?.id === currentUser?.id),
+            },
+            {
+              label: "Task List All Active",
+              items: activeTasks
+                .map(toTaskItem)
+                .filter((t) => t.assigned_to?.id === currentUser?.id),
+            },
+          ]}
+          icon={<ListTodo className="size-5 hover:text-white " />}
+          color="bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-light "
         />
-        <StatCard
+
+        <StatCardStatModal
           label="Completed"
           value={totalCompleted}
-          icon={CheckCircle2}
+          icon={<CheckCircle2 className="size-5" />}
           color="bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400"
+          data={[
+            {
+              label: "Completed by You",
+              items: completedTasks
+                .filter(
+                  (t) =>
+                    t.assigned_to === currentUser?.id ||
+                    t.created_by === currentUser?.id
+                )
+                .map(toTaskItem),
+            },
+          ]}
         />
-        <StatCard
+        <StatCardStatModal
           label="Overdue"
           value={totalOverdue}
-          icon={AlertCircle}
+          icon={<AlertCircle className="size-5" />}
           color="bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
+          data={[
+            {
+              label: "Overdue Assigned to You",
+              items: overdueTasks
+                .filter((t) => t.assigned_to === currentUser?.id)
+                .map(toTaskItem),
+            },
+          ]}
         />
-        <StatCard
+        <StatCardStatModal
           label="Due This Week"
           value={totalDueSoon}
-          icon={Clock}
+          icon={<Clock className="size-5" />}
           color="bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400"
+          data={[
+            {
+              label: "Due This Week Assigned to You",
+              items: dueSoonTasks
+                .filter((t) => t.assigned_to === currentUser?.id)
+                .map(toTaskItem),
+            },
+          ]}
         />
       </div>
 
@@ -173,16 +246,7 @@ const HomePage = async () => {
       </div>
 
       {/* ── recent tasks ── */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-semibold">
-            Tasks Created This Week
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <RecentTasksList tasks={tasks} users={users} />
-        </CardContent>
-      </Card>
+      <RecentTasksFilterCard tasks={tasks} users={users} />
     </div>
   );
 };

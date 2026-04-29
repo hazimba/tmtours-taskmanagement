@@ -1,6 +1,15 @@
 "use client";
 
-import { Task, TaskStatus, Profile } from "@/app/types";
+import { Profile, Task, TaskStatus } from "@/app/types";
+import {
+  PRIORITY_META,
+  STATUS_META,
+  formatDate,
+  isDueSoonWithinWeek,
+  isOverdue,
+} from "@/components/shared/task-meta";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -8,30 +17,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Search,
-  X,
-  AlertCircle,
-  Paperclip,
-  CalendarDays,
-  ChevronUp,
-  ChevronDown,
-  ChevronsUpDown,
-  Loader2,
-} from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
-  STATUS_META,
-  PRIORITY_META,
-  isOverdue,
-  isDueSoonWithinWeek,
-  formatDate,
-} from "@/components/shared/task-meta";
+  AlertCircle,
+  ChevronDown,
+  ChevronUp,
+  ChevronsUpDown,
+  Loader2,
+  Paperclip,
+  Search,
+  X,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import AvatarNameRender from "../avatar-name-render";
 
 export type SortField =
   | "created_at"
@@ -216,18 +215,19 @@ export function TaskTable({
 
                   <div className="mt-0.5 flex items-center gap-2 min-w-0 overflow-hidden">
                     {assignee ? (
-                      <div className="flex min-w-0 items-center gap-2">
-                        <Avatar className="h-6 w-6 shrink-0">
-                          <AvatarImage src={assignee.avatar_url || ""} />
-                          <AvatarFallback className="rounded-full bg-primary/20 text-primary text-[9px] font-bold">
-                            {assignee.full_name?.charAt(0).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
+                      // <div className="flex min-w-0 items-center gap-2">
+                      //   <Avatar className="h-6 w-6 shrink-0">
+                      //     <AvatarImage src={assignee.avatar_url || ""} />
+                      //     <AvatarFallback className="rounded-full bg-primary/20 text-primary text-[9px] font-bold">
+                      //       {assignee.full_name?.charAt(0).toUpperCase()}
+                      //     </AvatarFallback>
+                      //   </Avatar>
 
-                        <span className="truncate text-[11px] text-muted-foreground">
-                          {assignee.full_name}
-                        </span>
-                      </div>
+                      //   <span className="truncate text-[11px] text-muted-foreground">
+                      //     {assignee.full_name}
+                      //   </span>
+                      // </div>
+                      <AvatarNameRender assignee={assignee as Profile} />
                     ) : (
                       <span className="shrink-0 text-[11px] text-muted-foreground">
                         Unassigned

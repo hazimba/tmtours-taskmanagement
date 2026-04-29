@@ -1,21 +1,26 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useState } from "react";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogTitle,
-  DialogClose,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 type TaskModalItem = {
   id: string;
   title: string;
   due_date?: string;
-  assigned_to?: string;
+  assigned_to?: {
+    id: string;
+    full_name?: string | null;
+    avatar_url?: string | null;
+  };
 };
 
 type TaskModalGroup = {
@@ -27,24 +32,29 @@ const StatCardStatModal = ({
   label,
   value,
   color,
+  icon,
   data = [],
 }: {
   label: string;
   value: number;
   color: string;
+  icon?: React.ReactNode;
   data?: TaskModalGroup[];
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
 
   return (
-    <Card className="hover:bg-primary hover:text-white rounded-lg transition-colors">
+    <Card className="hover:bg-primary hover:!text-white group-hover:bg-white rounded-lg transition-colors group">
       <CardContent
         className="p-4 flex items-center gap-4 cursor-pointer"
         onClick={() => setIsOpen(true)}
       >
         <div
-          className={`flex size-10 shrink-0 items-center justify-center rounded-xl ${color}`}
-        />
+          className={`flex size-10 shrink-0 items-center group-hover:text-white justify-center group-hover:bg-black/20 rounded-xl ${color}`}
+        >
+          {icon}
+        </div>
 
         <div>
           <p className="text-2xl font-bold leading-none">{value}</p>
@@ -53,7 +63,7 @@ const StatCardStatModal = ({
       </CardContent>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="min-w-4xl !w-screen">
+        <DialogContent className="min-w-4xl">
           <DialogTitle>{label}</DialogTitle>
 
           <DialogDescription>
@@ -74,13 +84,14 @@ const StatCardStatModal = ({
                     No tasks found.
                   </p>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-4">
                     {group.items.map((task) => (
                       <div
                         key={task.id}
-                        className="rounded-md border p-3 text-sm"
+                        onClick={() => router.push(`/task/${task.id}`)}
+                        className="rounded-md border p-3 text-sm hover:bg-muted cursor-pointer"
                       >
-                        <p className="font-medium">{task.title}</p>
+                        <p className="font-medium truncate">{task.title}</p>
 
                         <div className="mt-1 text-xs text-muted-foreground">
                           {task.due_date && (
@@ -88,10 +99,6 @@ const StatCardStatModal = ({
                               Due:{" "}
                               {new Date(task.due_date).toLocaleDateString()}
                             </p>
-                          )}
-
-                          {task.assigned_to && (
-                            <p>Assigned to: {task.assigned_to}</p>
                           )}
                         </div>
                       </div>
@@ -103,7 +110,11 @@ const StatCardStatModal = ({
           </div>
 
           <DialogClose asChild>
-            <Button variant="outline">Close</Button>
+            <div className="flex justify-end w-full">
+              <Button variant="outline" className="">
+                Close
+              </Button>
+            </div>
           </DialogClose>
         </DialogContent>
       </Dialog>

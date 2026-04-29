@@ -186,6 +186,19 @@ export default function SignupPage() {
         status: "ACTIVE",
         updated_at: new Date().toISOString(),
       });
+
+      const { data: authData, error: authError } =
+        await supabase.auth.admin.updateUserById(sessionUser.id, {
+          user_metadata: {
+            company_id: sessionUser.company_id,
+            full_name: values.full_name,
+          },
+        });
+
+      console.log("Auth update result:", { authData, authError });
+
+      if (authError) throw new Error(authError.message);
+
       if (profileError) throw new Error(profileError.message);
 
       toast.success("Profile complete! Taking you to your dashboard…");
