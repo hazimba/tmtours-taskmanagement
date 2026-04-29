@@ -25,6 +25,7 @@ interface LeftNavigationProps {
   isSuperAdmin: boolean;
   companies: { id: string; name: string }[];
   activeCompanyId: string | null;
+  displayName: string | null;
   displayCompanyName: string | null;
 }
 
@@ -33,6 +34,7 @@ const LeftNavigation = ({
   isSuperAdmin,
   companies,
   activeCompanyId,
+  displayName,
   displayCompanyName,
 }: LeftNavigationProps) => {
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
@@ -257,7 +259,7 @@ const LeftNavigation = ({
                   />
                 ) : (
                   <div className="text-sm font-normal tracking-widest text-muted-foreground">
-                    {displayCompanyName ?? "No Company"}
+                    Hi {displayName} - {displayCompanyName ?? "No Company"}
                   </div>
                 )}
               </div>

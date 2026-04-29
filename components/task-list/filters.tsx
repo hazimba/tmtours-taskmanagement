@@ -98,7 +98,7 @@ export function TaskFilters({
         {/* Status — multi-select dropdown */}
         <div className="space-y-3">
           {/* Row: Status, Assignee, Due Date */}
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+          <div className="grid grid-cols-3 gap-3 md:grid-cols-3">
             {/* Status */}
             <div className="space-y-1">
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -258,7 +258,7 @@ export function TaskFilters({
                   </button>
                 </PopoverTrigger>
 
-                <PopoverContent className="w-48 p-1.5 z-[10000]" align="start">
+                <PopoverContent className="w-48 p-1.5 z-[10000]" align="end">
                   {[
                     { value: "all", label: "Any due date" },
                     { value: "overdue", label: "Overdue" },
