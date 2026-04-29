@@ -3,10 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 
 // Server-only admin client — never exposed to browser
 const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL! ||
-    "https://qkjejkhpcuoprfeurssd.supabase.co",
-  process.env.SUPABASE_SERVICE_ROLE_KEY! ||
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFramVqa2hwY3VvcHJmZXVyc3NkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NzIwNDEyMSwiZXhwIjoyMDkyNzgwMTIxfQ.9KXX2L6z9lclHK0G0VjESdkpwZNT72Dhu1TcZa_tmGo",
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
   { auth: { autoRefreshToken: false, persistSession: false } }
 );
 
