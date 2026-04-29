@@ -75,8 +75,10 @@ const PageLayout = async ({ children }: { children: React.ReactNode }) => {
           </Link>
 
           <div className="flex items-center gap-2">
-            <>Hi {user?.user_metadata?.full_name}</>
-            <div className="h-6 w-[1.5px] bg-border mx-1" />
+            <div className="hidden md:block">
+              Hi {user?.user_metadata?.full_name}
+            </div>
+            <div className="h-6 w-[1.5px] bg-border mx-1 hidden md:block" />
 
             <ModeToggle />
 
@@ -99,6 +101,7 @@ const PageLayout = async ({ children }: { children: React.ReactNode }) => {
       <LeftNavigation
         isSuperAdmin={isSuperAdmin}
         companies={companies ?? []}
+        displayName={user?.user_metadata?.full_name}
         activeCompanyId={activeCompanyId}
         displayCompanyName={displayCompany?.name ?? null}
       >
