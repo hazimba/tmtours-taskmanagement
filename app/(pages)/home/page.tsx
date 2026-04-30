@@ -3,6 +3,7 @@ import { getActiveCompanyId } from "@/lib/get-active-company";
 import { createClient } from "@/lib/supabase/server";
 import { RecentTasksFilterCard } from "./RecentTasksFilterCard";
 import { HomeStats } from "./HomeStats";
+import NoActiveCycleRender from "@/components/no-active-cycle-render";
 
 const HomePage = async () => {
   const supabase = await createClient();
@@ -18,9 +19,19 @@ const HomePage = async () => {
     .from("cycles")
     .select("id")
     .eq("status", "ACTIVE")
-    .order("created_at", { ascending: false })
-    .eq(activeCompanyId ? "company_id" : "1", activeCompanyId ?? true)
+    .eq("company_id", activeCompanyId)
     .single();
+
+  console.log("cycleData", cycleData);
+
+  // if (cycleData === null) {
+  //   return (
+  //     <NoActiveCycleRender
+  //       title="DASHBOARD"
+  //       description="No active cycle found. Please create a cycle to manage tasks."
+  //     />
+  //   );
+  // }
 
   const tasksQuery = supabase
     .from("tasks")

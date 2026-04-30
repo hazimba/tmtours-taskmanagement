@@ -2,6 +2,7 @@ import { createClient as sp } from "@/lib/supabase/server";
 import { Task } from "@/app/types";
 import { TaskBoard } from "@/components/task-board";
 import { getActiveCompanyId } from "@/lib/get-active-company";
+import NoActiveCycleRender from "@/components/no-active-cycle-render";
 
 const TaskPage = async () => {
   const supabaseServer = await sp();
@@ -26,15 +27,23 @@ const TaskPage = async () => {
     .from("cycles")
     .select("id")
     .eq("status", "ACTIVE")
-    .order("created_at", { ascending: false })
-    .eq(activeCompanyId ? "company_id" : "1", activeCompanyId ?? true)
+    .eq("company_id", activeCompanyId)
     .single();
+
+  if (cycleQuery.data === null) {
+    return (
+      <NoActiveCycleRender
+        title="TASK BOARD"
+        description="No active cycle found. Please create a cycle to manage tasks."
+      />
+    );
+  }
 
   const query = supabaseServer
     .from("tasks")
     .select("*")
     .eq("is_archived", false)
-    .eq("cycle_id", cycleQuery.data?.id ?? "")
+    .eq("cycle_id", cycleQuery.data?.id)
     .order("created_at", { ascending: false });
 
   if (activeCompanyId) query.eq("company_id", activeCompanyId);

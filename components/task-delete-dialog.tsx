@@ -61,7 +61,9 @@ export function TaskDeleteDialog({
         }
       }
 
-      const { error } = await supabase.from("tasks").delete().eq("id", task.id);
+      const { error } = await supabase.rpc("delete_task_cascade", {
+        p_task_id: task.id,
+      });
 
       if (error) throw error;
 
