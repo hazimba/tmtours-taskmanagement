@@ -31,11 +31,11 @@ export default async function CyclePage() {
 
   const { data: cycles } = await cycleQuery;
 
+  // Fetch ALL non-archived tasks (cycle tasks + backlog)
   const taskQuery = supabase
     .from("tasks")
     .select("*")
     .eq("is_archived", false)
-    .not("cycle_id", "is", null)
     .order("created_at", { ascending: false });
 
   if (activeCompanyId) taskQuery.eq("company_id", activeCompanyId);

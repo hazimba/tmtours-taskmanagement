@@ -22,10 +22,19 @@ const TaskPage = async () => {
   const meta = user.user_metadata as Record<string, string> | undefined;
   const activeCompanyId = await getActiveCompanyId(meta);
 
+  const cycleQuery = await supabaseServer
+    .from("cycles")
+    .select("id")
+    .eq("status", "ACTIVE")
+    .order("created_at", { ascending: false })
+    .eq(activeCompanyId ? "company_id" : "1", activeCompanyId ?? true)
+    .single();
+
   const query = supabaseServer
     .from("tasks")
     .select("*")
     .eq("is_archived", false)
+    .eq("cycle_id", cycleQuery.data?.id ?? "")
     .order("created_at", { ascending: false });
 
   if (activeCompanyId) query.eq("company_id", activeCompanyId);
