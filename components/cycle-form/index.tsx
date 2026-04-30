@@ -34,6 +34,7 @@ const STATUS_LABELS: Record<CycleStatus, string> = {
   [CycleStatus.COMPLETED]: "Completed",
   [CycleStatus.CANCELLED]: "Cancelled",
   [CycleStatus.ON_HOLD]: "On Hold",
+  [CycleStatus.NOT_ACTIVE]: "Not Active",
 };
 
 export function CycleForm({ cycle }: CycleFormProps) {
