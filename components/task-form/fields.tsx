@@ -28,6 +28,7 @@ interface TaskFieldsProps {
   isEdit: boolean;
   users: Profile[];
   allTasks: Task[];
+  cycles: { id: string; name: string }[];
 }
 
 export function TaskFields({
@@ -38,10 +39,12 @@ export function TaskFields({
   isEdit,
   users,
   allTasks,
+  cycles,
 }: TaskFieldsProps) {
   const [tagInput, setTagInput] = useState("");
   const watchedTags = useWatch({ control, name: "tags" }) ?? [];
   const watchedParentId = useWatch({ control, name: "parent_id" }) ?? "";
+  const watchedCycleId = useWatch({ control, name: "cycle_id" }) ?? "";
   const watchedStatus = useWatch({ control, name: "status" });
   const watchedPriority = useWatch({ control, name: "priority" });
   const watchedAssignedTo = useWatch({ control, name: "assigned_to" }) ?? "";
@@ -110,6 +113,32 @@ export function TaskFields({
               </SelectContent>
             </Select>
           </div>
+        </div>
+
+        {/* Cycle selector */}
+        <div className="space-y-2">
+          <Label>
+            <span className="flex items-center gap-1.5">
+              <Link2 className="h-3.5 w-3.5" />
+              Cycle (Sprint)
+            </span>
+          </Label>
+          <Select
+            value={watchedCycleId}
+            onValueChange={(v) => setValue("cycle_id", v === "none" ? "" : v)}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Link to a cycle..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">— No Cycle —</SelectItem>
+              {cycles.map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  {c.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div className="space-y-2">
           <Label htmlFor="description">Description</Label>

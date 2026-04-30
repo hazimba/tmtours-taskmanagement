@@ -342,7 +342,13 @@ export type Database = {
       current_user_role: { Args: never; Returns: string }
     }
     Enums: {
-      cycle_status: "PLANNED" | "ACTIVE" | "COMPLETED" | "CANCELLED" | "ON_HOLD"
+      cycle_status:
+        | "PLANNED"
+        | "ACTIVE"
+        | "COMPLETED"
+        | "CANCELLED"
+        | "ON_HOLD"
+        | "NOT_ACTIVE"
       task_priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT"
       task_status: "TODO" | "IN_PROGRESS" | "REVIEW" | "COMPLETED" | "CANCELLED"
       user_department:
@@ -489,7 +495,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      cycle_status: ["PLANNED", "ACTIVE", "COMPLETED", "CANCELLED", "ON_HOLD"],
+      cycle_status: [
+        "PLANNED",
+        "ACTIVE",
+        "COMPLETED",
+        "CANCELLED",
+        "ON_HOLD",
+        "NOT_ACTIVE",
+      ],
       task_priority: ["LOW", "MEDIUM", "HIGH", "URGENT"],
       task_status: ["TODO", "IN_PROGRESS", "REVIEW", "COMPLETED", "CANCELLED"],
       user_department: [

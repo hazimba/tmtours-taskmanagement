@@ -173,7 +173,9 @@ export default async function TaskDetailPage({
     typedTask.status !== TaskStatus.COMPLETED &&
     typedTask.status !== TaskStatus.CANCELLED;
   const isOwner = currentUser?.id === typedTask.created_by;
-  const isAdmin = currentUser?.user_metadata?.role === "ADMIN";
+  const isAdmin =
+    currentUser?.user_metadata?.role === "ADMIN" ||
+    currentUser?.user_metadata?.role === "SUPERADMIN";
   const canEdit = isOwner || isAdmin;
 
   const [assignedUserRes, createdByUserRes, parentTaskRes, subtasksRes] =

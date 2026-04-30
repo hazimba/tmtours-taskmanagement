@@ -7,6 +7,7 @@ export enum CycleStatus {
   COMPLETED = "COMPLETED",
   CANCELLED = "CANCELLED",
   ON_HOLD = "ON_HOLD",
+  NOT_ACTIVE = "NOT_ACTIVE",
 }
 
 export enum TaskPriority {

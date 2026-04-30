@@ -26,10 +26,12 @@ export function TaskForm({ task }: TaskFormProps) {
 
   const [users, setUsers] = useState<Profile[]>([]);
   const [allTasks, setAllTasks] = useState<Task[]>([]);
+  const [cycles, setCycles] = useState<{ id: string; name: string }[]>([]);
   const [companyId, setCompanyId] = useState<string | null>(null);
 
   const triggerTaskRefresh = useCompanyStore((s) => s.triggerTaskRefresh);
 
+  const presetCycleId = searchParams.get("cycle_id") ?? undefined;
   const copyTitle = searchParams.get("title") ?? undefined;
   const copyDefaults = copyTitle
     ? {
@@ -67,10 +69,16 @@ export function TaskForm({ task }: TaskFormProps) {
           parent_id: task.parent_id ?? "",
           start_date: task.start_date ?? "",
           due_date: task.due_date ?? "",
+          cycle_id: task.cycle_id ?? "",
         }
       : copyDefaults
-      ? { ...copyDefaults }
-      : { status: TaskStatus.TODO, priority: TaskPriority.MEDIUM, tags: [] },
+      ? { ...copyDefaults, cycle_id: presetCycleId ?? "" }
+      : {
+          status: TaskStatus.TODO,
+          priority: TaskPriority.MEDIUM,
+          tags: [],
+          cycle_id: presetCycleId ?? "",
+        },
   });
 
   useEffect(() => {
@@ -93,26 +101,35 @@ export function TaskForm({ task }: TaskFormProps) {
 
       if (!cid) return;
 
-      const [{ data: usersData }, { data: tasksData }] = await Promise.all([
-        // Only show users from the same company
-        supabase
-          .from("profiles")
-          .select("id, full_name, avatar_url, email, company_id")
-          .eq("company_id", cid),
-        // Only show tasks from the same company
-        supabase
-          .from("tasks")
-          .select("id, title, status")
-          .eq("is_archived", false)
-          .eq("company_id", cid)
-          .order("created_at", { ascending: false }),
-      ]);
+      const [{ data: usersData }, { data: tasksData }, { data: cyclesData }] =
+        await Promise.all([
+          // Only show users from the same company
+          supabase
+            .from("profiles")
+            .select("id, full_name, avatar_url, email, company_id")
+            .eq("company_id", cid),
+          // Only show tasks from the same company
+          supabase
+            .from("tasks")
+            .select("id, title, status")
+            .eq("is_archived", false)
+            .eq("company_id", cid)
+            .order("created_at", { ascending: false }),
+          // Only show active cycles from the same company
+          supabase
+            .from("cycles")
+            .select("id, name")
+            .eq("is_archived", false)
+            .eq("company_id", cid)
+            .order("created_at", { ascending: false }),
+        ]);
 
       if (usersData) setUsers(usersData as Profile[]);
       if (tasksData)
         setAllTasks(
           (tasksData as Task[]).filter((t) => !isEdit || t.id !== task?.id)
         );
+      if (cyclesData) setCycles(cyclesData as { id: string; name: string }[]);
     }
     load();
   }, [isEdit, task?.id]);
@@ -139,6 +156,7 @@ export function TaskForm({ task }: TaskFormProps) {
             parent_id: data.parent_id || null,
             start_date: data.start_date || null,
             due_date: data.due_date || null,
+            cycle_id: data.cycle_id || null,
           })
           .eq("id", task!.id);
         if (error) throw error;
@@ -157,13 +175,14 @@ export function TaskForm({ task }: TaskFormProps) {
           parent_id,
           start_date,
           due_date,
+          cycle_id,
         } = data;
         const { error } = await supabase.from("tasks").insert([
           {
             id: uuidv4(),
             created_by: user.id,
             is_archived: false,
-            company_id: companyId, // from state — set during load()
+            company_id: companyId,
             title,
             description: description || null,
             status,
@@ -174,6 +193,7 @@ export function TaskForm({ task }: TaskFormProps) {
             parent_id: parent_id || null,
             start_date: start_date || null,
             due_date: due_date || null,
+            cycle_id: cycle_id || null,
           },
         ]);
         if (error) throw error;
@@ -221,6 +241,7 @@ export function TaskForm({ task }: TaskFormProps) {
           isEdit={isEdit}
           users={users}
           allTasks={allTasks}
+          cycles={cycles}
         />
 
         <div className="flex justify-end gap-3 pb-10">

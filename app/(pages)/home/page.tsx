@@ -14,10 +14,19 @@ const HomePage = async () => {
   const meta = currentUser?.user_metadata as Record<string, string> | undefined;
   const activeCompanyId = await getActiveCompanyId(meta);
 
+  const { data: cycleData } = await supabase
+    .from("cycles")
+    .select("id")
+    .eq("status", "ACTIVE")
+    .order("created_at", { ascending: false })
+    .eq(activeCompanyId ? "company_id" : "1", activeCompanyId ?? true)
+    .single();
+
   const tasksQuery = supabase
     .from("tasks")
     .select("*")
     .eq("is_archived", false)
+    .eq("cycle_id", cycleData?.id ?? "")
     .order("created_at", { ascending: false });
 
   const usersQuery = supabase
@@ -45,7 +54,7 @@ const HomePage = async () => {
       <div>
         <h1 className="text-xl font-bold tracking-widest">DASHBOARD</h1>
         <p className="text-xs text-muted-foreground mt-0.5">
-          Overview of all tasks
+          Overview of all tasks which cycle is ACTIVE
         </p>
       </div>
 
