@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import {
   Bell,
   Building2,
+  CalendarRange,
   ChevronLeft,
   ChevronRight,
   Home,
@@ -56,6 +57,7 @@ const LeftNavigation = ({
     { href: "/home", label: "Home", icon: Home },
     { href: "/task", label: "Board", icon: Bell },
     { href: "/task/list", label: "List", icon: List },
+    { href: "/cycle", label: "Cycles", icon: CalendarRange },
     { href: "/profile", label: "Profile", icon: User },
   ];
 
@@ -133,6 +135,8 @@ const LeftNavigation = ({
                   ? pathname === "/task" ||
                     (pathname.startsWith("/task/") &&
                       !pathname.startsWith("/task/list"))
+                  : href === "/cycle"
+                  ? pathname === "/cycle" || pathname.startsWith("/cycle/")
                   : pathname === href || pathname.startsWith(href + "/");
 
               return (

@@ -19,6 +19,7 @@ export const taskSchema = z.object({
   parent_id: z.string().optional().or(z.literal("")),
   start_date: z.string().optional().or(z.literal("")),
   due_date: z.string().optional().or(z.literal("")),
+  cycle_id: z.string().optional().or(z.literal("")),
 });
 
 export type TaskFormData = z.infer<typeof taskSchema>;
