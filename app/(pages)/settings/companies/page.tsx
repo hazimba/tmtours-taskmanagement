@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Building2 } from "lucide-react";
+import { Building2, Trash } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/lib/supabaseClient";
 import { toast } from "sonner";
 import { Database } from "@/app/types/database";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 const companySchema = z.object({
   name: z.string().min(2, "Company name is required"),
@@ -69,6 +74,27 @@ const CompaniesPage = () => {
 
     loadCompanies();
   }, []);
+
+  const handleDeleteCompany = async (companyId: string) => {
+    try {
+      setLoading(true);
+
+      const { error } = await supabase.rpc("delete_company_cascade", {
+        p_company_id: companyId,
+      });
+
+      if (error) throw new Error(error.message);
+
+      toast.success("Company and all related data deleted successfully");
+      fetchCompanies();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Something went wrong"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const onSubmit = async (values: CompanyFormValues) => {
     try {
@@ -170,7 +196,41 @@ const CompaniesPage = () => {
             {companies.map((company) => (
               <Card key={company.id}>
                 <CardHeader>
-                  <CardTitle className="text-base">{company.name}</CardTitle>
+                  <CardTitle className="text-base">
+                    <div className="flex items-center w-full justify-between gap-2">
+                      <div>{company.name}</div>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            disabled={loading}
+                          >
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                          className="p-2"
+                          align="start"
+                          side="bottom"
+                        >
+                          <div className="flex flex-col gap-2">
+                            <p className="text-sm">
+                              Are you sure you want to delete this company?
+                            </p>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => handleDeleteCompany(company.id)}
+                              disabled={loading}
+                            >
+                              {loading ? "Deleting..." : "Yes, Delete"}
+                            </Button>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  </CardTitle>
                 </CardHeader>
 
                 <CardContent className="space-y-1 text-sm text-muted-foreground">

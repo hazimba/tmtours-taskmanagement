@@ -7,6 +7,7 @@ import { Profile, UserDepartment, UserRole, UserStatus } from "@/app/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { v4 as uuidv4 } from "uuid";
 import {
   Select,
   SelectContent,
@@ -19,6 +20,7 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface Props {
   profile: Profile;
@@ -26,6 +28,8 @@ interface Props {
 
 export default function ProfileEditForm({ profile }: Props) {
   const router = useRouter();
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState(profile.avatar_url ?? "");
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     full_name: profile.full_name ?? "",
@@ -43,39 +47,75 @@ export default function ProfileEditForm({ profile }: Props) {
 
   async function handleSave() {
     setSaving(true);
+
     const supabase = createClient();
-    const { error } = await supabase
-      .from("profiles")
-      .update({
-        full_name: form.full_name || null,
-        phone: form.phone || null,
-        location: form.location || null,
-        position: form.position || null,
-        department: form.department || null,
-        role: form.role || null,
-        status: form.status || null,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", profile.id);
 
-    await fetch("/api/users/update-metadata", {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        userId: profile.id,
-        full_name: form.full_name,
-      }),
-    });
+    let avatarUrl = profile.avatar_url ?? null;
 
-    setSaving(false);
-    if (error) {
-      toast.error("Failed to save: " + error?.message);
-    } else {
+    try {
+      if (avatarFile) {
+        const ext = avatarFile.name.split(".").pop();
+        const imagePath = `${profile.id}/${uuidv4()}.${ext}`;
+
+        if (profile.avatar_url) {
+          const oldPath = profile.avatar_url.split("/profile-images/")[1];
+
+          if (oldPath) {
+            await supabase.storage.from("profile-images").remove([oldPath]);
+          }
+        }
+
+        const { error: uploadError } = await supabase.storage
+          .from("profile-images")
+          .upload(imagePath, avatarFile, {
+            cacheControl: "3600",
+            upsert: false,
+          });
+
+        if (uploadError) throw uploadError;
+
+        const { data } = supabase.storage
+          .from("profile-images")
+          .getPublicUrl(imagePath);
+
+        avatarUrl = data.publicUrl;
+      }
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          full_name: form.full_name || null,
+          phone: form.phone || null,
+          location: form.location || null,
+          position: form.position || null,
+          department: form.department || null,
+          role: form.role || null,
+          status: form.status || null,
+          avatar_url: avatarUrl,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", profile.id);
+
+      if (error) throw error;
+
+      await fetch("/api/users/update-metadata", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: profile.id,
+          full_name: form.full_name,
+        }),
+      });
+
       toast.success("Profile updated");
       router.push("/profile");
       router.refresh();
+    } catch (err: any) {
+      toast.error("Failed to save: " + err.message);
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -101,6 +141,32 @@ export default function ProfileEditForm({ profile }: Props) {
           <CardTitle className="text-base">Personal Details</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="avatar">Profile Image</Label>
+
+            {avatarPreview && (
+              <Image
+                width={96}
+                height={96}
+                src={avatarPreview}
+                alt="Profile"
+                className="h-24 w-24 rounded-full object-cover border"
+              />
+            )}
+
+            <Input
+              id="avatar"
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+
+                setAvatarFile(file);
+                setAvatarPreview(URL.createObjectURL(file));
+              }}
+            />
+          </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="full_name">Full Name</Label>

@@ -187,17 +187,17 @@ export default function SignupPage() {
         updated_at: new Date().toISOString(),
       });
 
-      const { data: authData, error: authError } =
-        await supabase.auth.admin.updateUserById(sessionUser.id, {
-          user_metadata: {
-            company_id: sessionUser.company_id,
-            full_name: values.full_name,
-          },
-        });
+      // const { data: authData, error: authError } =
+      //   await supabase.auth.admin.updateUserById(sessionUser.id, {
+      //     user_metadata: {
+      //       company_id: sessionUser.company_id,
+      //       full_name: values.full_name,
+      //     },
+      //   });
 
-      console.log("Auth update result:", { authData, authError });
+      // console.log("Auth update result:", { authData, authError });
 
-      if (authError) throw new Error(authError.message);
+      // if (authError) throw new Error(authError.message);
 
       if (profileError) throw new Error(profileError.message);
 
@@ -251,8 +251,8 @@ export default function SignupPage() {
             {/* Profile Photo */}
             <div className="space-y-3">
               <label className="text-sm font-medium">Profile Photo</label>
-              <div className="flex items-start gap-4">
-                {/* Avatar circle */}
+              {/* <div className="flex items-start gap-4">
+                
                 <div className="relative h-20 w-20 rounded-full border-2 border-dashed border-border flex items-center justify-center overflow-hidden bg-muted shrink-0">
                   {confirmedPreview ?? previewUrl ? (
                     <Image
@@ -354,7 +354,7 @@ export default function SignupPage() {
                     to lock in your choice.
                   </p>
                 </div>
-              </div>
+              </div> */}
             </div>
 
             {/* Fields */}

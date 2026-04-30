@@ -86,9 +86,11 @@ const ProfilePage = async () => {
 
   const { data, error } = await supabase
     .from("profiles")
-    .select("*")
+    .select("*, company:company_id(name)")
     .eq("id", user.id)
     .single<Profile>();
+
+  console.log("data", data);
 
   if (error || !data) {
     return (
@@ -147,8 +149,11 @@ const ProfilePage = async () => {
             </div>
 
             <div className="mt-4 flex-1 sm:mt-0 sm:ml-5 sm:pb-2">
-              <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">
-                {data.full_name ?? "Unnamed user"}
+              <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl flex items-end gap-2 justify-center sm:justify-start">
+                {data.full_name ?? "Unnamed user"}{" "}
+                <div className="text-sm text-muted-foreground flex items-end">
+                  {data.company?.name}
+                </div>
               </h1>
               <p className="mt-1 text-sm text-muted-foreground">
                 {data.position ?? "—"}
