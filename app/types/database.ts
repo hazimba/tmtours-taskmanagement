@@ -73,6 +73,63 @@ export type Database = {
           },
         ]
       }
+      cycles: {
+        Row: {
+          company_id: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          end_date: string | null
+          id: string
+          is_archived: boolean | null
+          name: string
+          start_date: string | null
+          status: Database["public"]["Enums"]["cycle_status"]
+          updated_at: string | null
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_archived?: boolean | null
+          name: string
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["cycle_status"]
+          updated_at?: string | null
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_archived?: boolean | null
+          name?: string
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["cycle_status"]
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cycles_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cycles_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -180,6 +237,7 @@ export type Database = {
           completed_at: string | null
           created_at: string
           created_by: string
+          cycle_id: string | null
           description: string | null
           due_date: string | null
           id: string
@@ -201,6 +259,7 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           created_by: string
+          cycle_id?: string | null
           description?: string | null
           due_date?: string | null
           id?: string
@@ -222,6 +281,7 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           created_by?: string
+          cycle_id?: string | null
           description?: string | null
           due_date?: string | null
           id?: string
@@ -236,6 +296,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_tasks_cycle"
+            columns: ["cycle_id"]
+            isOneToOne: false
+            referencedRelation: "cycles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tasks_assigned_to_fkey"
             columns: ["assigned_to"]
@@ -271,9 +338,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      current_user_company_id: { Args: never; Returns: string }
+      current_user_role: { Args: never; Returns: string }
     }
     Enums: {
+      cycle_status: "PLANNED" | "ACTIVE" | "COMPLETED" | "CANCELLED" | "ON_HOLD"
       task_priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT"
       task_status: "TODO" | "IN_PROGRESS" | "REVIEW" | "COMPLETED" | "CANCELLED"
       user_department:
@@ -420,6 +489,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      cycle_status: ["PLANNED", "ACTIVE", "COMPLETED", "CANCELLED", "ON_HOLD"],
       task_priority: ["LOW", "MEDIUM", "HIGH", "URGENT"],
       task_status: ["TODO", "IN_PROGRESS", "REVIEW", "COMPLETED", "CANCELLED"],
       user_department: [
