@@ -50,6 +50,12 @@ const TaskPage = async () => {
 
   const { data: tasks, error } = await query;
 
+  const { data: departments } = await supabaseServer
+    .from("departments")
+    .select("id, name")
+    .eq("company_id", activeCompanyId)
+    .order("name", { ascending: true });
+
   if (error) {
     console.error("Error fetching tasks:", error);
     return (
@@ -65,6 +71,7 @@ const TaskPage = async () => {
       <TaskBoard
         key={activeCompanyId ?? "all"}
         initialTasks={(tasks ?? []) as Task[]}
+        departments={(departments ?? []) as { id: string; name: string }[]}
       />
     </div>
   );

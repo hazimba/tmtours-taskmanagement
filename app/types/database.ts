@@ -130,6 +130,35 @@ export type Database = {
           },
         ]
       }
+      departments: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "departments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -238,6 +267,7 @@ export type Database = {
           created_at: string
           created_by: string
           cycle_id: string | null
+          department_id: string | null
           description: string | null
           due_date: string | null
           id: string
@@ -260,6 +290,7 @@ export type Database = {
           created_at?: string
           created_by: string
           cycle_id?: string | null
+          department_id?: string | null
           description?: string | null
           due_date?: string | null
           id?: string
@@ -282,6 +313,7 @@ export type Database = {
           created_at?: string
           created_by?: string
           cycle_id?: string | null
+          department_id?: string | null
           description?: string | null
           due_date?: string | null
           id?: string
@@ -325,6 +357,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "tasks_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "tasks_parent_id_fkey"
             columns: ["parent_id"]
             isOneToOne: false
@@ -340,6 +379,11 @@ export type Database = {
     Functions: {
       current_user_company_id: { Args: never; Returns: string }
       current_user_role: { Args: never; Returns: string }
+      delete_company_cascade: {
+        Args: { p_company_id: string }
+        Returns: undefined
+      }
+      delete_task_cascade: { Args: { p_task_id: string }; Returns: undefined }
     }
     Enums: {
       cycle_status:

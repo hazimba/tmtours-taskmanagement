@@ -87,6 +87,14 @@ export interface Cycle {
   creator?: Profile | null;
 }
 
+export interface Department {
+  company_id: string | null;
+  created_at: string;
+  id: string;
+  name: string;
+  company?: Company | null;
+}
+
 export interface Profile {
   avatar_url: string | null;
   company_id: string | null;
@@ -124,6 +132,7 @@ export interface Task {
   created_at: string;
   created_by: string;
   cycle_id: string | null;
+  department_id: string | null;
   description: string | null;
   due_date: string | null;
   id: string;
@@ -140,6 +149,7 @@ export interface Task {
   assignee?: Profile | null;
   company?: Company | null;
   creator?: Profile | null;
+  department?: Department | null;
   parent?: Task | null;
 }
 

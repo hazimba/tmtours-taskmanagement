@@ -29,6 +29,7 @@ interface TaskFieldsProps {
   users: Profile[];
   allTasks: Task[];
   cycles: { id: string; name: string }[];
+  departments: { id: string; name: string }[];
 }
 
 export function TaskFields({
@@ -40,11 +41,14 @@ export function TaskFields({
   users,
   allTasks,
   cycles,
+  departments,
 }: TaskFieldsProps) {
   const [tagInput, setTagInput] = useState("");
   const watchedTags = useWatch({ control, name: "tags" }) ?? [];
   const watchedParentId = useWatch({ control, name: "parent_id" }) ?? "";
   const watchedCycleId = useWatch({ control, name: "cycle_id" }) ?? "";
+  const watchedDepartmentId =
+    useWatch({ control, name: "department_id" }) ?? "";
   const watchedStatus = useWatch({ control, name: "status" });
   const watchedPriority = useWatch({ control, name: "priority" });
   const watchedAssignedTo = useWatch({ control, name: "assigned_to" }) ?? "";
@@ -115,30 +119,36 @@ export function TaskFields({
           </div>
         </div>
 
-        {/* Cycle selector */}
-        <div className="space-y-2">
-          <Label>
-            <span className="flex items-center gap-1.5">
-              <Link2 className="h-3.5 w-3.5" />
-              Cycle (Sprint)
-            </span>
-          </Label>
-          <Select
-            value={watchedCycleId}
-            onValueChange={(v) => setValue("cycle_id", v === "none" ? "" : v)}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Link to a cycle..." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">— No Cycle —</SelectItem>
-              {cycles.map((c) => (
-                <SelectItem key={c.id} value={c.id}>
-                  {c.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        {/* Cycle + Department selectors */}
+        {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> */}
+        <div>
+          {/* Cycle selector */}
+          <div className="space-y-2">
+            <Label>
+              <span className="flex items-center gap-1.5">
+                <Link2 className="h-3.5 w-3.5" />
+                Cycle (Sprint)
+              </span>
+            </Label>
+            <Select
+              value={watchedCycleId}
+              onValueChange={(v) => setValue("cycle_id", v === "none" ? "" : v)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Link to a cycle..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">— No Cycle —</SelectItem>
+                {cycles.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Department selector */}
         </div>
         <div className="space-y-2">
           <Label htmlFor="description">Description</Label>
@@ -262,13 +272,39 @@ export function TaskFields({
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Categorization
           </p>
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Label htmlFor="category">Category</Label>
             <Input
               id="category"
               {...register("category")}
               placeholder="e.g. Marketing, Development…"
             />
+          </div> */}
+          <div className="space-y-2">
+            <Label>
+              <span className="flex items-center gap-1.5">
+                <Link2 className="h-3.5 w-3.5" />
+                Department
+              </span>
+            </Label>
+            <Select
+              value={watchedDepartmentId}
+              onValueChange={(v) =>
+                setValue("department_id", v === "none" ? "" : v)
+              }
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select department..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">— No Department —</SelectItem>
+                {departments.map((d) => (
+                  <SelectItem key={d.id} value={d.id}>
+                    {d.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label>Tags</Label>

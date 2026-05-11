@@ -27,6 +27,9 @@ export function TaskForm({ task }: TaskFormProps) {
   const [users, setUsers] = useState<Profile[]>([]);
   const [allTasks, setAllTasks] = useState<Task[]>([]);
   const [cycles, setCycles] = useState<{ id: string; name: string }[]>([]);
+  const [departments, setDepartments] = useState<
+    { id: string; name: string }[]
+  >([]);
   const [companyId, setCompanyId] = useState<string | null>(null);
 
   const triggerTaskRefresh = useCompanyStore((s) => s.triggerTaskRefresh);
@@ -70,14 +73,16 @@ export function TaskForm({ task }: TaskFormProps) {
           start_date: task.start_date ?? "",
           due_date: task.due_date ?? "",
           cycle_id: task.cycle_id ?? "",
+          department_id: task.department_id ?? "",
         }
       : copyDefaults
-      ? { ...copyDefaults, cycle_id: presetCycleId ?? "" }
+      ? { ...copyDefaults, cycle_id: presetCycleId ?? "", department_id: "" }
       : {
           status: TaskStatus.TODO,
           priority: TaskPriority.MEDIUM,
           tags: [],
           cycle_id: presetCycleId ?? "",
+          department_id: "",
         },
   });
 
@@ -101,28 +106,34 @@ export function TaskForm({ task }: TaskFormProps) {
 
       if (!cid) return;
 
-      const [{ data: usersData }, { data: tasksData }, { data: cyclesData }] =
-        await Promise.all([
-          // Only show users from the same company
-          supabase
-            .from("profiles")
-            .select("id, full_name, avatar_url, email, company_id")
-            .eq("company_id", cid),
-          // Only show tasks from the same company
-          supabase
-            .from("tasks")
-            .select("id, title, status")
-            .eq("is_archived", false)
-            .eq("company_id", cid)
-            .order("created_at", { ascending: false }),
-          // Only show active cycles from the same company
-          supabase
-            .from("cycles")
-            .select("id, name")
-            .eq("is_archived", false)
-            .eq("company_id", cid)
-            .order("created_at", { ascending: false }),
-        ]);
+      const [
+        { data: usersData },
+        { data: tasksData },
+        { data: cyclesData },
+        { data: departmentsData },
+      ] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("id, full_name, avatar_url, email, company_id")
+          .eq("company_id", cid),
+        supabase
+          .from("tasks")
+          .select("id, title, status")
+          .eq("is_archived", false)
+          .eq("company_id", cid)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("cycles")
+          .select("id, name")
+          .eq("is_archived", false)
+          .eq("company_id", cid)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("departments")
+          .select("id, name")
+          .eq("company_id", cid)
+          .order("name", { ascending: true }),
+      ]);
 
       if (usersData) setUsers(usersData as Profile[]);
       if (tasksData)
@@ -130,6 +141,8 @@ export function TaskForm({ task }: TaskFormProps) {
           (tasksData as Task[]).filter((t) => !isEdit || t.id !== task?.id)
         );
       if (cyclesData) setCycles(cyclesData as { id: string; name: string }[]);
+      if (departmentsData)
+        setDepartments(departmentsData as { id: string; name: string }[]);
     }
     load();
   }, [isEdit, task?.id]);
@@ -157,6 +170,7 @@ export function TaskForm({ task }: TaskFormProps) {
             start_date: data.start_date || null,
             due_date: data.due_date || null,
             cycle_id: data.cycle_id || null,
+            department_id: data.department_id || null,
           })
           .eq("id", task!.id);
         if (error) throw error;
@@ -176,6 +190,7 @@ export function TaskForm({ task }: TaskFormProps) {
           start_date,
           due_date,
           cycle_id,
+          department_id,
         } = data;
         const { error } = await supabase.from("tasks").insert([
           {
@@ -194,6 +209,7 @@ export function TaskForm({ task }: TaskFormProps) {
             start_date: start_date || null,
             due_date: due_date || null,
             cycle_id: cycle_id || null,
+            department_id: department_id || null,
           },
         ]);
         if (error) throw error;
@@ -242,6 +258,7 @@ export function TaskForm({ task }: TaskFormProps) {
           users={users}
           allTasks={allTasks}
           cycles={cycles}
+          departments={departments}
         />
 
         <div className="flex justify-end gap-3 pb-10">
