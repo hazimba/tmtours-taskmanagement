@@ -24,6 +24,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AttachmentItem } from "./attachment-item";
+import { logActivity } from "@/lib/log-activity";
+import { ActivityType, ActivityAction } from "@/app/types";
 
 function getAttachmentType(
   file: File
@@ -51,6 +53,7 @@ interface TaskAttachmentModalProps {
   currentUserId: string | null;
   assignedTo?: string | null;
   initialAttachments: TaskAttachment[];
+  loggedIn: any;
 }
 
 export function TaskAttachmentModal({
@@ -58,7 +61,9 @@ export function TaskAttachmentModal({
   currentUserId,
   assignedTo,
   initialAttachments,
+  loggedIn,
 }: TaskAttachmentModalProps) {
+  const companyId = loggedIn.user_metadata.company_id;
   const [open, setOpen] = useState(false);
   const [attachments, setAttachments] =
     useState<TaskAttachment[]>(initialAttachments);
@@ -117,6 +122,18 @@ export function TaskAttachmentModal({
         toast.success(
           `${uploaded.length} file${uploaded.length > 1 ? "s" : ""} uploaded`
         );
+        if (currentUserId) {
+          await logActivity({
+            task_id: taskId,
+            user_id: currentUserId,
+            company_id: companyId,
+            type: ActivityType.ATTACHMENT,
+            action: ActivityAction.ADDED,
+            metadata: {
+              files: uploaded.map((f) => ({ name: f.name, url: f.url })),
+            },
+          });
+        }
         setOpen(false);
       }
     }
@@ -150,16 +167,37 @@ export function TaskAttachmentModal({
       setLinkName("");
       setLinkType("OTHER");
       toast.success("Link added.");
+      if (currentUserId) {
+        await logActivity({
+          task_id: taskId,
+          user_id: currentUserId,
+          company_id: companyId,
+          type: ActivityType.ATTACHMENT,
+          action: ActivityAction.ADDED,
+          metadata: { name: newAtt.name, url: newAtt.url },
+        });
+      }
       setOpen(false);
     }
   }
 
   async function handleRemove(idx: number) {
+    const removed = attachments[idx];
     const updated = attachments.filter((_, i) => i !== idx);
     const ok = await saveAttachments(updated);
     if (ok) {
       setAttachments(updated);
       toast.success("Attachment removed.");
+      if (currentUserId) {
+        await logActivity({
+          task_id: taskId,
+          user_id: currentUserId,
+          company_id: companyId,
+          type: ActivityType.ATTACHMENT,
+          action: ActivityAction.REMOVED,
+          metadata: { name: removed.name, url: removed.url },
+        });
+      }
     }
   }
 

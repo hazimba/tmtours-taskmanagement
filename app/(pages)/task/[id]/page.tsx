@@ -212,7 +212,7 @@ export default async function TaskDetailPage({
   const subtasks = (subtasksRes.data ?? []) as Task[];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-1 px-1 md:px-0">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-1 px-1 md:px-0 items-start">
       <Card className="scrollbar-hide overflow-y-auto p-4">
         <div className="space-y-5">
           <div className="flex items-center justify-between gap-4">
@@ -404,6 +404,7 @@ export default async function TaskDetailPage({
             initialAttachments={
               (typedTask.attachments as TaskAttachment[]) ?? []
             }
+            loggedIn={currentUser}
           />
 
           {subtasks.length > 0 && (
@@ -428,7 +429,7 @@ export default async function TaskDetailPage({
           </div>
         </div>
       </Card>
-      <Card className="px-5 py-5 gap-4">
+      <Card className="px-5 py-5 gap-4 overflow-y-auto scrollbar-hide">
         {currentUser ? (
           <TaskComments taskId={id} currentUserId={currentUser.id} />
         ) : (
