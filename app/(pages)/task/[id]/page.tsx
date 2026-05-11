@@ -155,8 +155,6 @@ export default async function TaskDetailPage({
     data: { user: currentUser },
   } = await supabaseServer.auth.getUser();
 
-  console.log("currentUser", currentUser);
-
   const { data: task, error } = await supabaseServer
     .from("tasks")
     .select("*")

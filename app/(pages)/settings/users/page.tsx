@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
-import { z } from "zod";
+import { set, z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UserPlus, CheckCircle2, XCircle, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
@@ -85,6 +85,7 @@ const UsersPage = () => {
     const { data, error } = await supabase
       .from("profiles")
       .select(`*, company:companies (id, name)`)
+      .eq("company_id", loggedIn?.company_id)
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -117,20 +118,33 @@ const UsersPage = () => {
   };
 
   useEffect(() => {
+    const companyId = loggedIn?.company_id;
+    const isSuperAdmin = loggedIn?.role === "SUPERADMIN";
+    if (!companyId) return;
+
     const fetchUsers = async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("profiles")
         .select(`*, company:companies (id, name)`)
         .order("created_at", { ascending: false });
 
+      // Only filter for non-superadmin
+      if (!isSuperAdmin) {
+        query = query.eq("company_id", companyId);
+      }
+
+      const { data, error } = await query;
+
       if (error) {
-        toast.error(error.message);
+        console.error(error);
         return;
       }
+
       setUsers((data as Profile[]) ?? []);
     };
+
     fetchUsers();
-  }, []);
+  }, [loggedIn]);
 
   useEffect(() => {
     const timer = setTimeout(() => verifyCompanyCode(companyCode), 500);

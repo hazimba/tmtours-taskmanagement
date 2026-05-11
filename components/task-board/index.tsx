@@ -182,7 +182,7 @@ export function TaskBoard({ initialTasks, departments }: TaskBoardProps) {
             value={selectedDepartmentId || "all"}
             onValueChange={(v) => setSelectedDepartmentId(v === "all" ? "" : v)}
           >
-            <SelectTrigger className="h-8 w-52 text-xs">
+            <SelectTrigger className="h-8 w-52 text-xs bg-white">
               <SelectValue placeholder="All departments" />
             </SelectTrigger>
             <SelectContent>

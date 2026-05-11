@@ -22,16 +22,14 @@ const HomePage = async () => {
     .eq("company_id", activeCompanyId)
     .single();
 
-  console.log("cycleData", cycleData);
-
-  // if (cycleData === null) {
-  //   return (
-  //     <NoActiveCycleRender
-  //       title="DASHBOARD"
-  //       description="No active cycle found. Please create a cycle to manage tasks."
-  //     />
-  //   );
-  // }
+  if (cycleData === null) {
+    return (
+      <NoActiveCycleRender
+        title="DASHBOARD"
+        description="No active cycle found. Please create a cycle to manage tasks."
+      />
+    );
+  }
 
   const tasksQuery = supabase
     .from("tasks")
