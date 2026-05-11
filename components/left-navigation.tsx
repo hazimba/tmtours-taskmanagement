@@ -12,6 +12,7 @@ import {
   PanelRight,
   User,
   UserCog,
+  Users2,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -66,6 +67,12 @@ const LeftNavigation = ({
       href: "/settings/users",
       label: "Users",
       icon: UserCog,
+      auth: ["ADMIN", "SUPERADMIN"],
+    },
+    {
+      href: "/settings/departments",
+      label: "Departments",
+      icon: Users2,
       auth: ["ADMIN", "SUPERADMIN"],
     },
     {

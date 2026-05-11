@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import {
   DndContext,
@@ -16,12 +16,19 @@ import {
 import { supabase } from "@/lib/supabaseClient";
 import { Task, TaskStatus } from "@/app/types";
 import { TaskCard } from "@/components/task-card";
-import { Plus, ClipboardList } from "lucide-react";
+import { Plus, ClipboardList, Building2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { STATUS_META } from "@/components/shared/task-meta";
 import { StatusColumn } from "./status-column";
 import { useCompanyStore } from "@/lib/stores/company-store";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export const STATUS_ORDER: TaskStatus[] = [
   TaskStatus.TODO,
@@ -33,12 +40,14 @@ export const STATUS_ORDER: TaskStatus[] = [
 
 interface TaskBoardProps {
   initialTasks: Task[];
+  departments: { id: string; name: string }[];
 }
 
-export function TaskBoard({ initialTasks }: TaskBoardProps) {
+export function TaskBoard({ initialTasks, departments }: TaskBoardProps) {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [overStatus, setOverStatus] = useState<TaskStatus | null>(null);
+  const [selectedDepartmentId, setSelectedDepartmentId] = useState<string>("");
 
   const triggerTaskRefresh = useCompanyStore((s) => s.triggerTaskRefresh);
 
@@ -46,12 +55,17 @@ export function TaskBoard({ initialTasks }: TaskBoardProps) {
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
   );
 
+  const filteredTasks = useMemo(() => {
+    if (!selectedDepartmentId) return tasks;
+    return tasks.filter((t) => t.department_id === selectedDepartmentId);
+  }, [tasks, selectedDepartmentId]);
+
   const grouped = STATUS_ORDER.reduce<Record<TaskStatus, Task[]>>((acc, s) => {
-    acc[s] = tasks.filter((t) => t.status === s);
+    acc[s] = filteredTasks.filter((t) => t.status === s);
     return acc;
   }, {} as Record<TaskStatus, Task[]>);
 
-  const totalActive = tasks.filter(
+  const totalActive = filteredTasks.filter(
     (t) =>
       t.status !== TaskStatus.COMPLETED && t.status !== TaskStatus.CANCELLED
   ).length;
@@ -144,7 +158,7 @@ export function TaskBoard({ initialTasks }: TaskBoardProps) {
 
   return (
     <div>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
         <div>
           <h1 className="text-xl font-bold tracking-widest">TASK BOARD</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -159,6 +173,40 @@ export function TaskBoard({ initialTasks }: TaskBoardProps) {
           </Button>
         </Link>
       </div>
+
+      {/* Department filter */}
+      {departments.length > 0 && (
+        <div className="flex items-center gap-2 mb-6">
+          <Building2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+          <Select
+            value={selectedDepartmentId || "all"}
+            onValueChange={(v) => setSelectedDepartmentId(v === "all" ? "" : v)}
+          >
+            <SelectTrigger className="h-8 w-52 text-xs">
+              <SelectValue placeholder="All departments" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All departments</SelectItem>
+              {departments.map((d) => (
+                <SelectItem key={d.id} value={d.id}>
+                  {d.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {selectedDepartmentId && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-8 px-2 text-xs text-muted-foreground"
+              onClick={() => setSelectedDepartmentId("")}
+            >
+              <X className="h-3.5 w-3.5 mr-1" />
+              Clear
+            </Button>
+          )}
+        </div>
+      )}
 
       <DndContext
         sensors={sensors}
