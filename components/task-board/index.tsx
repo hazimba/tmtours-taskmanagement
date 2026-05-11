@@ -14,7 +14,8 @@ import {
   type DragOverEvent,
 } from "@dnd-kit/core";
 import { supabase } from "@/lib/supabaseClient";
-import { Task, TaskStatus } from "@/app/types";
+import { Task, TaskStatus, ActivityType, ActivityAction } from "@/app/types";
+import { logActivity } from "@/lib/log-activity";
 import { TaskCard } from "@/components/task-card";
 import { Plus, ClipboardList, Building2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -131,6 +132,23 @@ export function TaskBoard({ initialTasks, departments }: TaskBoardProps) {
         duration: 2000,
       });
       triggerTaskRefresh();
+
+      // Log the status change activity
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      const movedTask = tasks.find((t) => t.id === activeId);
+      if (user && movedTask) {
+        await logActivity({
+          task_id: activeId,
+          user_id: user.id,
+          company_id: movedTask.company_id ?? null,
+          type: ActivityType.STATUS_CHANGE,
+          action: ActivityAction.UPDATED,
+          old_value: { status: sourceStatus },
+          new_value: { status: targetStatus },
+        });
+      }
     }
   }
 

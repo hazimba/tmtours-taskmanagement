@@ -204,7 +204,7 @@ export function ActivityFeed({ companyId }: ActivityFeedProps) {
   }
 
   return (
-    <div className="space-y-3 h-124 overflow-y-auto scrollbar-hide">
+    <div className="space-y-3 h-full overflow-y-auto scrollbar-hide">
       {activities.map((a) => {
         const dot = TYPE_DOT[a.type] ?? "bg-slate-400";
         const taskId = (a.task as { id?: string } | null)?.id;
