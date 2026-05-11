@@ -10,13 +10,15 @@ import {
   isOverdue,
   isDueSoon,
 } from "@/components/shared/task-meta";
+import { ActivityFeed } from "./activity-feed";
 
 interface ListPanelProps {
   tasks: Task[];
   currentUserId: string | null;
+  companyId: string | null;
 }
 
-export function ListPanel({ tasks, currentUserId }: ListPanelProps) {
+export function ListPanel({ tasks, currentUserId, companyId }: ListPanelProps) {
   const myTasks = currentUserId
     ? tasks.filter(
         (t) => t.assigned_to === currentUserId
@@ -212,6 +214,18 @@ export function ListPanel({ tasks, currentUserId }: ListPanelProps) {
                 </div>
               );
             })}
+        </CardContent>
+      </Card>
+
+      {/* Activity Feed */}
+      <Card className="h-1/3 overflow-y-auto">
+        <CardHeader className="pb-1 pt-4 px-4">
+          <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Recent Activity
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="px-4 pb-4 !h-1/3 overflow-y-auto">
+          <ActivityFeed companyId={companyId} />
         </CardContent>
       </Card>
     </div>

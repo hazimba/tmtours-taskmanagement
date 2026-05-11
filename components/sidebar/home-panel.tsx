@@ -1,12 +1,15 @@
 "use client";
 
 import { Profile } from "@/app/types";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getInitials } from "@/components/shared/task-meta";
 import { LiveClock } from "./live-clock";
+import { useCompanyStore } from "@/lib/stores/company-store";
+import { ActivityFeed } from "./activity-feed";
 
 export function HomePanel({ profile }: { profile: Profile | null }) {
+  const companyId = useCompanyStore((s) => s.activeCompanyId);
   return (
     <div className="space-y-3">
       <Card>
@@ -42,6 +45,16 @@ export function HomePanel({ profile }: { profile: Profile | null }) {
       <Card>
         <CardContent className="p-3">
           <LiveClock />
+        </CardContent>
+      </Card>
+      <Card className="h-1/3 overflow-y-auto">
+        <CardHeader className="pb-1 pt-4 px-4">
+          <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Recent Activity
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="px-4 pb-4 !h-1/3 overflow-y-auto">
+          <ActivityFeed companyId={companyId} />
         </CardContent>
       </Card>
     </div>

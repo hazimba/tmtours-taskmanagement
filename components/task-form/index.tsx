@@ -11,9 +11,16 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { TaskFields } from "./fields";
-import { Profile, TaskPriority, TaskStatus } from "@/app/types";
+import {
+  Profile,
+  TaskPriority,
+  TaskStatus,
+  ActivityType,
+  ActivityAction,
+} from "@/app/types";
 import { Task } from "@/app/types";
 import { useCompanyStore } from "@/lib/stores/company-store";
+import { logActivity } from "@/lib/log-activity";
 
 interface TaskFormProps {
   task?: Task;
@@ -174,6 +181,100 @@ export function TaskForm({ task }: TaskFormProps) {
           })
           .eq("id", task!.id);
         if (error) throw error;
+
+        // Log changed fields as individual activities
+        const fieldLogs: Array<{
+          type: ActivityType;
+          old: Record<string, unknown>;
+          new: Record<string, unknown>;
+        }> = [];
+        if (data.status !== task!.status)
+          fieldLogs.push({
+            type: ActivityType.STATUS_CHANGE,
+            old: { status: task!.status },
+            new: { status: data.status },
+          });
+        if (data.priority !== task!.priority)
+          fieldLogs.push({
+            type: ActivityType.PRIORITY_CHANGE,
+            old: { priority: task!.priority },
+            new: { priority: data.priority },
+          });
+        if ((data.assigned_to || null) !== task!.assigned_to) {
+          const findName = (id: string | null | undefined) =>
+            users.find((u) => u.id === id)?.full_name ?? null;
+          fieldLogs.push({
+            type: ActivityType.ASSIGNEE_CHANGE,
+            old: {
+              assigned_to: task!.assigned_to,
+              full_name: findName(task!.assigned_to),
+            },
+            new: {
+              assigned_to: data.assigned_to || null,
+              full_name: findName(data.assigned_to),
+            },
+          });
+        }
+        if ((data.due_date || null) !== task!.due_date)
+          fieldLogs.push({
+            type: ActivityType.DUE_DATE_CHANGE,
+            old: { due_date: task!.due_date },
+            new: { due_date: data.due_date || null },
+          });
+        if ((data.cycle_id || null) !== task!.cycle_id)
+          fieldLogs.push({
+            type: ActivityType.CYCLE_CHANGE,
+            old: { cycle_id: task!.cycle_id },
+            new: { cycle_id: data.cycle_id || null },
+          });
+        if ((data.department_id || null) !== task!.department_id)
+          fieldLogs.push({
+            type: ActivityType.DEPARTMENT_CHANGE,
+            old: { department_id: task!.department_id },
+            new: { department_id: data.department_id || null },
+          });
+        if ((data.parent_id || null) !== task!.parent_id) {
+          const findTitle = (id: string | null | undefined) =>
+            allTasks.find((t) => t.id === id)?.title ?? null;
+          fieldLogs.push({
+            type: ActivityType.PARENT_CHANGE,
+            old: {
+              parent_id: task!.parent_id,
+              title: findTitle(task!.parent_id),
+            },
+            new: {
+              parent_id: data.parent_id || null,
+              title: findTitle(data.parent_id),
+            },
+          });
+        }
+        if (data.title !== task!.title)
+          fieldLogs.push({
+            type: ActivityType.TITLE_CHANGE,
+            old: { title: task!.title },
+            new: { title: data.title },
+          });
+        if ((data.description || null) !== task!.description)
+          fieldLogs.push({
+            type: ActivityType.DESCRIPTION_CHANGE,
+            old: { description: task!.description },
+            new: { description: data.description || null },
+          });
+
+        await Promise.all(
+          fieldLogs.map((f) =>
+            logActivity({
+              task_id: task!.id,
+              user_id: user.id,
+              company_id: companyId,
+              type: f.type,
+              action: ActivityAction.UPDATED,
+              old_value: f.old,
+              new_value: f.new,
+            })
+          )
+        );
+
         toast.success("Task updated!");
         triggerTaskRefresh();
         router.push(`/task/${task!.id}`);
@@ -192,9 +293,10 @@ export function TaskForm({ task }: TaskFormProps) {
           cycle_id,
           department_id,
         } = data;
+        const newId = uuidv4();
         const { error } = await supabase.from("tasks").insert([
           {
-            id: uuidv4(),
+            id: newId,
             created_by: user.id,
             is_archived: false,
             company_id: companyId,
@@ -213,6 +315,16 @@ export function TaskForm({ task }: TaskFormProps) {
           },
         ]);
         if (error) throw error;
+
+        await logActivity({
+          task_id: newId,
+          user_id: user.id,
+          company_id: companyId,
+          type: ActivityType.CREATED,
+          action: ActivityAction.CREATED,
+          new_value: { title },
+        });
+
         toast.success("Task created!");
         triggerTaskRefresh();
         reset();

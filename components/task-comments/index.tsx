@@ -15,6 +15,9 @@ import { Loader2, Send, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { CommentItem } from "./comment-item";
+import { logActivity } from "@/lib/log-activity";
+import { ActivityType, ActivityAction } from "@/app/types";
+import { useCompanyStore } from "@/lib/stores/company-store";
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -36,6 +39,7 @@ interface TaskCommentsProps {
 }
 
 export function TaskComments({ taskId, currentUserId }: TaskCommentsProps) {
+  const companyId = useCompanyStore((s) => s.activeCompanyId);
   const [comments, setComments] = useState<TaskComment[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -120,6 +124,15 @@ export function TaskComments({ taskId, currentUserId }: TaskCommentsProps) {
     ]);
     if (error) toast.error("Failed to post comment.");
     else {
+      // Log activity
+      await logActivity({
+        task_id: taskId,
+        user_id: currentUserId,
+        company_id: companyId,
+        type: ActivityType.COMMENT,
+        action: ActivityAction.ADDED,
+        new_value: { content: data.content.trim() },
+      });
       reset();
       await refetchComments();
     }
@@ -132,7 +145,16 @@ export function TaskComments({ taskId, currentUserId }: TaskCommentsProps) {
       .eq("id", id)
       .eq("user_id", currentUserId);
     if (error) toast.error("Failed to delete comment.");
-    else await refetchComments();
+    else {
+      await logActivity({
+        task_id: taskId,
+        user_id: currentUserId,
+        company_id: companyId,
+        type: ActivityType.COMMENT,
+        action: ActivityAction.REMOVED,
+      });
+      await refetchComments();
+    }
   }
 
   function startEdit(comment: TaskComment) {

@@ -54,7 +54,13 @@ export function SidebarPanel() {
 
   if (pathname === "/home") return <HomePanel profile={profile} />;
   if (pathname.startsWith("/task/list"))
-    return <ListPanel tasks={tasks} currentUserId={currentUserId} />;
+    return (
+      <ListPanel
+        tasks={tasks}
+        currentUserId={currentUserId}
+        companyId={activeCompanyId}
+      />
+    );
   if (
     pathname === "/task" ||
     (pathname.startsWith("/task/") && !pathname.startsWith("/task/list"))

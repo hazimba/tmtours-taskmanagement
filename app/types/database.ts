@@ -215,6 +215,67 @@ export type Database = {
           },
         ]
       }
+      task_activities: {
+        Row: {
+          action: Database["public"]["Enums"]["activity_action"]
+          company_id: string | null
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          new_value: Json | null
+          old_value: Json | null
+          task_id: string
+          type: Database["public"]["Enums"]["activity_type"]
+          user_id: string | null
+        }
+        Insert: {
+          action: Database["public"]["Enums"]["activity_action"]
+          company_id?: string | null
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          new_value?: Json | null
+          old_value?: Json | null
+          task_id: string
+          type: Database["public"]["Enums"]["activity_type"]
+          user_id?: string | null
+        }
+        Update: {
+          action?: Database["public"]["Enums"]["activity_action"]
+          company_id?: string | null
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          new_value?: Json | null
+          old_value?: Json | null
+          task_id?: string
+          type?: Database["public"]["Enums"]["activity_type"]
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_activities_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_activities_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_activities_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       task_comments: {
         Row: {
           content: string
@@ -386,6 +447,21 @@ export type Database = {
       delete_task_cascade: { Args: { p_task_id: string }; Returns: undefined }
     }
     Enums: {
+      activity_action: "ADDED" | "REMOVED" | "UPDATED" | "CREATED"
+      activity_type:
+        | "COMMENT"
+        | "ATTACHMENT"
+        | "STATUS_CHANGE"
+        | "PRIORITY_CHANGE"
+        | "ASSIGNEE_CHANGE"
+        | "CYCLE_CHANGE"
+        | "DEPARTMENT_CHANGE"
+        | "DUE_DATE_CHANGE"
+        | "TITLE_CHANGE"
+        | "DESCRIPTION_CHANGE"
+        | "TAG_CHANGE"
+        | "CREATED"
+        | "PARENT_CHANGE"
       cycle_status:
         | "PLANNED"
         | "ACTIVE"
@@ -539,6 +615,22 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      activity_action: ["ADDED", "REMOVED", "UPDATED", "CREATED"],
+      activity_type: [
+        "COMMENT",
+        "ATTACHMENT",
+        "STATUS_CHANGE",
+        "PRIORITY_CHANGE",
+        "ASSIGNEE_CHANGE",
+        "CYCLE_CHANGE",
+        "DEPARTMENT_CHANGE",
+        "DUE_DATE_CHANGE",
+        "TITLE_CHANGE",
+        "DESCRIPTION_CHANGE",
+        "TAG_CHANGE",
+        "CREATED",
+        "PARENT_CHANGE",
+      ],
       cycle_status: [
         "PLANNED",
         "ACTIVE",
