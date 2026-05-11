@@ -24,10 +24,7 @@ import Image from "next/image";
 
 interface Props {
   profile: Profile;
-  loggedIn?: {
-    id: string;
-    role: UserRole;
-  };
+  loggedIn?: any;
 }
 
 export default function ProfileEditForm({ profile, loggedIn }: Props) {
