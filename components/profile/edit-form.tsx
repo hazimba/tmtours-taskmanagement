@@ -24,9 +24,13 @@ import Image from "next/image";
 
 interface Props {
   profile: Profile;
+  loggedIn?: {
+    id: string;
+    role: UserRole;
+  };
 }
 
-export default function ProfileEditForm({ profile }: Props) {
+export default function ProfileEditForm({ profile, loggedIn }: Props) {
   const router = useRouter();
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState(profile.avatar_url ?? "");
@@ -236,16 +240,28 @@ export default function ProfileEditForm({ profile }: Props) {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label>Role</Label>
-              <Select value={form.role} onValueChange={(v) => set("role", v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select role" />
+              <Select
+                value={form.role}
+                defaultValue="USER"
+                onValueChange={(v) => set("role", v as UserRole)}
+                disabled={
+                  loggedIn?.role !== "SUPERADMIN" && loggedIn?.role !== "ADMIN"
+                }
+              >
+                <SelectTrigger className="md:w-1/2">
+                  <SelectValue placeholder="Select role..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.values(UserRole).map((r) => (
-                    <SelectItem key={r} value={r}>
-                      {r}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="USER">User</SelectItem>
+                  {loggedIn?.role === "SUPERADMIN" && (
+                    <SelectItem value="ADMIN">Admin</SelectItem>
+                  )}
+                  {loggedIn?.role === "ADMIN" && (
+                    <SelectItem value="ADMIN">Admin</SelectItem>
+                  )}
+                  {loggedIn?.role === "SUPERADMIN" && (
+                    <SelectItem value="SUPERADMIN">Super Admin</SelectItem>
+                  )}
                 </SelectContent>
               </Select>
             </div>

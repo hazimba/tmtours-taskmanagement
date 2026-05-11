@@ -19,5 +19,5 @@ export default async function ProfileEditPage() {
 
   if (error || !data) redirect("/profile");
 
-  return <ProfileEditForm profile={data} />;
+  return <ProfileEditForm profile={data} loggedIn={user.user_metadata} />;
 }

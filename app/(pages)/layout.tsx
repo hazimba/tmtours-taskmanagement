@@ -55,7 +55,7 @@ const PageLayout = async ({ children }: { children: React.ReactNode }) => {
                 className="rounded-lg"
               />
 
-              <div>HYNOJURA</div>
+              <div>TASK MANAGEMENT</div>
 
               <span className="w-3 h-3 rounded-full bg-indigo-600 animate-pulse" />
 

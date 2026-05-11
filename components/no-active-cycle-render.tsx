@@ -29,9 +29,9 @@ const NoActiveCycleRender = ({
             Activate a Cycle
           </h2>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            You&apos;re almost there! To see your tasks, select a cycle from the
+            No Active Cycle Selected! To see your tasks, select a cycle from the
             sidebar and click the
-            <span className="inline-flex items-center gap-1 font-bold text-primary mx-1">
+            <span className="inline-flex items-center gap-1 font-bold text-primary mx-1 py-1">
               <Zap className="h-3 w-3" /> Activate
             </span>
             button.

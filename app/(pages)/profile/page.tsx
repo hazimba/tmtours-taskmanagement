@@ -90,8 +90,6 @@ const ProfilePage = async () => {
     .eq("id", user.id)
     .single<Profile>();
 
-  console.log("data", data);
-
   if (error || !data) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center px-4">
