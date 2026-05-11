@@ -218,13 +218,13 @@ export function ListPanel({ tasks, currentUserId, companyId }: ListPanelProps) {
       </Card>
 
       {/* Activity Feed */}
-      <Card className="h-1/3 overflow-y-auto">
+      <Card className="max-h-72 overflow-y-auto scrollbar-hide">
         <CardHeader className="pb-1 pt-4 px-4">
           <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Recent Activity
           </CardTitle>
         </CardHeader>
-        <CardContent className="px-4 pb-4 !h-1/3 overflow-y-auto">
+        <CardContent className="px-4 pb-4 overflow-y-auto scrollbar-hide">
           <ActivityFeed companyId={companyId} />
         </CardContent>
       </Card>
